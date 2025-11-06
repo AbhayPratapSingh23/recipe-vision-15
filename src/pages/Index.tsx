@@ -9,6 +9,13 @@ interface Recipe {
   title: string;
   ingredients: string[];
   instructions: string[];
+  nutritionalValues: {
+    calories: string;
+    protein: string;
+    carbs: string;
+    fat: string;
+    fiber: string;
+  };
 }
 
 const Index = () => {
@@ -49,6 +56,16 @@ const Index = () => {
 
       if (error) throw error;
 
+      if (data.error) {
+        toast({
+          title: "Invalid Image",
+          description: data.error,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       setRecipe(data.recipe);
       toast({
         title: "Recipe generated!",
@@ -64,6 +81,34 @@ const Index = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const downloadRecipe = () => {
+    if (!recipe) return;
+
+    const content = `${recipe.title}\n\nIngredients:\n${recipe.ingredients.map((i, idx) => `${idx + 1}. ${i}`).join('\n')}\n\nInstructions:\n${recipe.instructions.map((i, idx) => `${idx + 1}. ${i}`).join('\n')}\n\nNutritional Values:\nCalories: ${recipe.nutritionalValues.calories}\nProtein: ${recipe.nutritionalValues.protein}\nCarbs: ${recipe.nutritionalValues.carbs}\nFat: ${recipe.nutritionalValues.fat}\nFiber: ${recipe.nutritionalValues.fiber}`;
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${recipe.title.replace(/\s+/g, '_')}_recipe.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadIngredients = () => {
+    if (!recipe) return;
+
+    const content = `Ingredients for ${recipe.title}\n\n${recipe.ingredients.map((i, idx) => `${idx + 1}. ${i}`).join('\n')}`;
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${recipe.title.replace(/\s+/g, '_')}_ingredients.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -154,9 +199,49 @@ const Index = () => {
           {recipe && (
             <Card className="shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
               <CardContent className="p-8">
-                <h2 className="text-3xl font-bold mb-6 text-primary">{recipe.title}</h2>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+                  <h2 className="text-3xl font-bold text-primary">{recipe.title}</h2>
+                  <div className="flex gap-2">
+                    <Button onClick={downloadIngredients} variant="outline" size="sm">
+                      Download Ingredients
+                    </Button>
+                    <Button onClick={downloadRecipe} variant="outline" size="sm">
+                      Download Recipe
+                    </Button>
+                  </div>
+                </div>
 
                 <div className="space-y-6">
+                  {/* Nutritional Values */}
+                  <div className="bg-secondary/30 rounded-lg p-4">
+                    <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-accent"></span>
+                      Nutritional Values (per serving)
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Calories</p>
+                        <p className="text-lg font-semibold">{recipe.nutritionalValues.calories}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Protein</p>
+                        <p className="text-lg font-semibold">{recipe.nutritionalValues.protein}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Carbs</p>
+                        <p className="text-lg font-semibold">{recipe.nutritionalValues.carbs}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Fat</p>
+                        <p className="text-lg font-semibold">{recipe.nutritionalValues.fat}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Fiber</p>
+                        <p className="text-lg font-semibold">{recipe.nutritionalValues.fiber}</p>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Ingredients */}
                   <div>
                     <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
