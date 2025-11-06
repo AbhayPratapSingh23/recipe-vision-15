@@ -9,6 +9,8 @@ interface Recipe {
   title: string;
   ingredients: string[];
   instructions: string[];
+  servingSize: number;
+  substitutes?: Record<string, string[]>;
   nutritionalValues: {
     calories: string;
     protein: string;
@@ -21,6 +23,7 @@ interface Recipe {
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [currentServings, setCurrentServings] = useState<number>(1);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -67,6 +70,7 @@ const Index = () => {
       }
 
       setRecipe(data.recipe);
+      setCurrentServings(data.recipe.servingSize || 1);
       toast({
         title: "Recipe generated!",
         description: "Your recipe is ready to view",
@@ -83,10 +87,28 @@ const Index = () => {
     }
   };
 
+  const scaleIngredient = (ingredient: string): string => {
+    if (!recipe) return ingredient;
+    const scale = currentServings / recipe.servingSize;
+    if (scale === 1) return ingredient;
+    
+    // Extract numbers and scale them
+    return ingredient.replace(/(\d+(?:\.\d+)?)\s*([½¼¾⅓⅔⅛⅜⅝⅞])?/g, (match, num, fraction) => {
+      let value = parseFloat(num);
+      if (fraction) {
+        const fractionMap: Record<string, number> = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 0.33, '⅔': 0.67, '⅛': 0.125, '⅜': 0.375, '⅝': 0.625, '⅞': 0.875 };
+        value += fractionMap[fraction] || 0;
+      }
+      const scaled = (value * scale).toFixed(2).replace(/\.?0+$/, '');
+      return scaled;
+    });
+  };
+
   const downloadRecipe = () => {
     if (!recipe) return;
 
-    const content = `${recipe.title}\n\nIngredients:\n${recipe.ingredients.map((i, idx) => `${idx + 1}. ${i}`).join('\n')}\n\nInstructions:\n${recipe.instructions.map((i, idx) => `${idx + 1}. ${i}`).join('\n')}\n\nNutritional Values:\nCalories: ${recipe.nutritionalValues.calories}\nProtein: ${recipe.nutritionalValues.protein}\nCarbs: ${recipe.nutritionalValues.carbs}\nFat: ${recipe.nutritionalValues.fat}\nFiber: ${recipe.nutritionalValues.fiber}`;
+    const scaledIngredients = recipe.ingredients.map(i => scaleIngredient(i));
+    const content = `${recipe.title}\n\nServing Size: ${currentServings}\n\nIngredients:\n${scaledIngredients.map((i, idx) => `${idx + 1}. ${i}`).join('\n')}\n\nInstructions:\n${recipe.instructions.map((i, idx) => `${idx + 1}. ${i}`).join('\n')}\n\nNutritional Values (per serving):\nCalories: ${recipe.nutritionalValues.calories}\nProtein: ${recipe.nutritionalValues.protein}\nCarbs: ${recipe.nutritionalValues.carbs}\nFat: ${recipe.nutritionalValues.fat}\nFiber: ${recipe.nutritionalValues.fiber}`;
     
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -100,7 +122,8 @@ const Index = () => {
   const downloadIngredients = () => {
     if (!recipe) return;
 
-    const content = `Ingredients for ${recipe.title}\n\n${recipe.ingredients.map((i, idx) => `${idx + 1}. ${i}`).join('\n')}`;
+    const scaledIngredients = recipe.ingredients.map(i => scaleIngredient(i));
+    const content = `Ingredients for ${recipe.title}\n\nServing Size: ${currentServings}\n\n${scaledIngredients.map((i, idx) => `${idx + 1}. ${i}`).join('\n')}`;
     
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -211,6 +234,31 @@ const Index = () => {
                   </div>
                 </div>
 
+                {/* Serving Size Adjuster */}
+                <div className="bg-accent/10 rounded-lg p-4 mb-6">
+                  <div className="flex items-center justify-between max-w-xs mx-auto">
+                    <span className="text-sm font-medium text-muted-foreground">Servings:</span>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentServings(Math.max(1, currentServings - 1))}
+                        disabled={currentServings <= 1}
+                      >
+                        -
+                      </Button>
+                      <span className="text-lg font-bold w-12 text-center">{currentServings}</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentServings(currentServings + 1)}
+                      >
+                        +
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-6">
                   {/* Nutritional Values */}
                   <div className="bg-secondary/30 rounded-lg p-4">
@@ -248,11 +296,18 @@ const Index = () => {
                       <span className="w-2 h-2 rounded-full bg-primary"></span>
                       Ingredients
                     </h3>
-                    <ul className="space-y-2 ml-4">
+                    <ul className="space-y-3 ml-4">
                       {recipe.ingredients.map((ingredient, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <span className="text-primary mt-1">•</span>
-                          <span className="text-foreground">{ingredient}</span>
+                        <li key={index} className="flex flex-col gap-1">
+                          <div className="flex items-start gap-2">
+                            <span className="text-primary mt-1">•</span>
+                            <span className="text-foreground">{scaleIngredient(ingredient)}</span>
+                          </div>
+                          {recipe.substitutes && recipe.substitutes[ingredient] && (
+                            <div className="ml-5 text-sm text-muted-foreground">
+                              <span className="italic">Substitutes: {recipe.substitutes[ingredient].join(", ")}</span>
+                            </div>
+                          )}
                         </li>
                       ))}
                     </ul>

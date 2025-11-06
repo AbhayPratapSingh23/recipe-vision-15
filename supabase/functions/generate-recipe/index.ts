@@ -129,14 +129,14 @@ serve(async (req) => {
             {
               role: "system",
               content:
-                "You are a professional chef and nutritionist. Analyze food images and generate detailed recipes with accurate ingredients, clear instructions, and estimated nutritional information. Always respond with valid JSON in this exact format: {\"title\": \"Recipe Name\", \"ingredients\": [\"ingredient 1\", \"ingredient 2\"], \"instructions\": [\"step 1\", \"step 2\"], \"nutritionalValues\": {\"calories\": \"X kcal\", \"protein\": \"X g\", \"carbs\": \"X g\", \"fat\": \"X g\", \"fiber\": \"X g\"}}",
+                "You are a professional chef and nutritionist. Analyze food images and generate detailed recipes with accurate ingredients, clear instructions, estimated nutritional information, and ingredient substitutes. Always respond with valid JSON in this exact format: {\"title\": \"Recipe Name\", \"servingSize\": 4, \"ingredients\": [\"ingredient 1\", \"ingredient 2\"], \"instructions\": [\"step 1\", \"step 2\"], \"substitutes\": {\"ingredient 1\": [\"substitute 1\", \"substitute 2\"]}, \"nutritionalValues\": {\"calories\": \"X kcal\", \"protein\": \"X g\", \"carbs\": \"X g\", \"fat\": \"X g\", \"fiber\": \"X g\"}}",
             },
             {
               role: "user",
               content: [
                 {
                   type: "text",
-                  text: "Please analyze this food image and generate a complete recipe with: 1) A title, 2) List of ingredients with measurements, 3) Step-by-step cooking instructions, 4) Estimated nutritional values per serving (calories, protein, carbs, fat, fiber). Return only valid JSON.",
+                  text: "Please analyze this food image and generate a complete recipe with: 1) A title, 2) Serving size (number of servings), 3) List of ingredients with measurements, 4) Step-by-step cooking instructions, 5) Possible substitute ingredients for each main ingredient (at least 1-2 alternatives when applicable), 6) Estimated nutritional values per serving (calories, protein, carbs, fat, fiber). Return only valid JSON.",
                 },
                 {
                   type: "image_url",
@@ -214,6 +214,11 @@ serve(async (req) => {
         fat: "N/A",
         fiber: "N/A"
       };
+    }
+
+    // Ensure servingSize exists with default
+    if (!recipe.servingSize) {
+      recipe.servingSize = 1;
     }
 
     console.log("Recipe generated successfully:", recipe.title);
