@@ -1,11 +1,14 @@
-import { useState } from "react";
-import { Upload, Loader2, ChefHat } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Upload, Loader2, ChefHat, LogOut, History, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 interface Recipe {
+  id?: string;
   title: string;
   ingredients: string[];
   instructions: string[];
@@ -18,14 +21,161 @@ interface Recipe {
     fat: string;
     fiber: string;
   };
+  image_url?: string;
+  created_at?: string;
 }
 
 const Index = () => {
+  const [user, setUser] = useState<User | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
   const [currentServings, setCurrentServings] = useState<number>(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Check authentication
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate("/auth");
+      } else {
+        setUser(session.user);
+        loadSavedRecipes();
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate("/auth");
+      } else {
+        setUser(session.user);
+        if (event === "SIGNED_IN") {
+          loadSavedRecipes();
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const loadSavedRecipes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("recipes")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        // Map database structure to Recipe interface
+        const mappedRecipes: Recipe[] = data.map((r) => ({
+          id: r.id,
+          title: r.title,
+          servingSize: r.serving_size,
+          ingredients: r.ingredients as string[],
+          instructions: r.instructions as string[],
+          substitutes: r.substitutes as Record<string, string[]> | undefined,
+          nutritionalValues: r.nutritional_values as {
+            calories: string;
+            protein: string;
+            carbs: string;
+            fat: string;
+            fiber: string;
+          },
+          image_url: r.image_url || undefined,
+          created_at: r.created_at,
+        }));
+        setSavedRecipes(mappedRecipes);
+      }
+    } catch (error) {
+      console.error("Error loading recipes:", error);
+    }
+  };
+
+  const saveRecipe = async (recipeData: Recipe) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase.from("recipes").insert({
+        user_id: user.id,
+        title: recipeData.title,
+        serving_size: recipeData.servingSize,
+        ingredients: recipeData.ingredients,
+        instructions: recipeData.instructions,
+        substitutes: recipeData.substitutes || null,
+        nutritional_values: recipeData.nutritionalValues,
+        image_url: selectedImage || null,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Recipe saved!",
+        description: "Added to your recipe collection",
+      });
+
+      loadSavedRecipes();
+    } catch (error: any) {
+      console.error("Error saving recipe:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save recipe",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteRecipe = async (recipeId: string) => {
+    try {
+      const { error } = await supabase
+        .from("recipes")
+        .delete()
+        .eq("id", recipeId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Recipe deleted",
+        description: "Removed from your collection",
+      });
+
+      loadSavedRecipes();
+    } catch (error) {
+      console.error("Error deleting recipe:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete recipe",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
+
+  const loadSavedRecipe = (savedRecipe: Recipe) => {
+    setRecipe({
+      title: savedRecipe.title,
+      ingredients: savedRecipe.ingredients,
+      instructions: savedRecipe.instructions,
+      servingSize: savedRecipe.servingSize,
+      substitutes: savedRecipe.substitutes,
+      nutritionalValues: savedRecipe.nutritionalValues,
+      id: savedRecipe.id,
+    });
+    setCurrentServings(savedRecipe.servingSize);
+    setSelectedImage(savedRecipe.image_url || null);
+    setShowHistory(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -71,9 +221,13 @@ const Index = () => {
 
       setRecipe(data.recipe);
       setCurrentServings(data.recipe.servingSize || 1);
+      
+      // Auto-save the recipe
+      await saveRecipe(data.recipe);
+      
       toast({
         title: "Recipe generated!",
-        description: "Your recipe is ready to view",
+        description: "Your recipe is ready and saved to your collection",
       });
     } catch (error) {
       console.error("Error generating recipe:", error);
@@ -138,8 +292,25 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
       {/* Hero Section */}
       <header className="container mx-auto px-4 py-16 text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6">
-          <ChefHat className="w-8 h-8 text-primary" />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex-1"></div>
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10">
+            <ChefHat className="w-8 h-8 text-primary" />
+          </div>
+          <div className="flex-1 flex justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowHistory(!showHistory)}
+            >
+              <History className="w-4 h-4 mr-2" />
+              History
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
         <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
           AI Recipe Generator
@@ -398,6 +569,74 @@ const Index = () => {
                     Generate Another Recipe
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Recipe History */}
+          {showHistory && savedRecipes.length > 0 && (
+            <Card className="shadow-xl">
+              <CardContent className="p-8">
+                <h2 className="text-3xl font-bold text-primary mb-6">Recipe History</h2>
+                <div className="grid gap-4">
+                  {savedRecipes.map((savedRecipe) => (
+                    <Card
+                      key={savedRecipe.id}
+                      className="hover:shadow-md transition-shadow cursor-pointer"
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-4">
+                          {savedRecipe.image_url && (
+                            <img
+                              src={savedRecipe.image_url}
+                              alt={savedRecipe.title}
+                              className="w-24 h-24 rounded-lg object-cover"
+                            />
+                          )}
+                          <div className="flex-1">
+                            <h3 className="text-xl font-semibold mb-2">{savedRecipe.title}</h3>
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {savedRecipe.ingredients.length} ingredients • {savedRecipe.instructions.length} steps • Serves {savedRecipe.servingSize}
+                            </p>
+                            {savedRecipe.created_at && (
+                              <p className="text-xs text-muted-foreground">
+                                Created {new Date(savedRecipe.created_at).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => loadSavedRecipe(savedRecipe)}
+                            >
+                              View
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => savedRecipe.id && deleteRecipe(savedRecipe.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {showHistory && savedRecipes.length === 0 && (
+            <Card className="shadow-xl">
+              <CardContent className="p-8 text-center">
+                <History className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-xl font-semibold mb-2">No recipes yet</h3>
+                <p className="text-muted-foreground">
+                  Generate your first recipe to start building your collection!
+                </p>
               </CardContent>
             </Card>
           )}
