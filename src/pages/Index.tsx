@@ -218,8 +218,62 @@ const Index = () => {
             </CardContent>
           </Card>
 
+          {/* Loading Skeleton */}
+          {isLoading && (
+            <Card className="shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <CardContent className="p-8">
+                <div className="space-y-6">
+                  {/* Title Skeleton */}
+                  <div className="h-8 bg-secondary/30 rounded animate-pulse w-2/3"></div>
+                  
+                  {/* Nutritional Values Skeleton */}
+                  <div className="bg-secondary/30 rounded-lg p-4">
+                    <div className="h-6 bg-secondary/50 rounded animate-pulse w-1/3 mb-3"></div>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="text-center space-y-2">
+                          <div className="h-4 bg-secondary/50 rounded animate-pulse w-16 mx-auto"></div>
+                          <div className="h-6 bg-secondary/50 rounded animate-pulse w-12 mx-auto"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Ingredients Skeleton */}
+                  <div>
+                    <div className="h-6 bg-secondary/30 rounded animate-pulse w-1/4 mb-3"></div>
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-secondary/50 animate-pulse"></div>
+                          <div className="h-4 bg-secondary/30 rounded animate-pulse flex-1"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Instructions Skeleton */}
+                  <div>
+                    <div className="h-6 bg-secondary/30 rounded animate-pulse w-1/4 mb-3"></div>
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <div className="h-6 w-6 rounded-full bg-secondary/50 animate-pulse flex-shrink-0"></div>
+                          <div className="flex-1 space-y-2">
+                            <div className="h-4 bg-secondary/30 rounded animate-pulse"></div>
+                            <div className="h-4 bg-secondary/30 rounded animate-pulse w-5/6"></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Recipe Display */}
-          {recipe && (
+          {recipe && !isLoading && (
             <Card className="shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
               <CardContent className="p-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
