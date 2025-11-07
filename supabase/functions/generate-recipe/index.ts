@@ -189,15 +189,29 @@ serve(async (req) => {
     // Parse the JSON response
     let recipe;
     try {
-      // Try to extract JSON from the response if it's wrapped in markdown
-      const jsonMatch = aiResponse.match(/```json\n([\s\S]*?)\n```/) || 
-                       aiResponse.match(/```\n([\s\S]*?)\n```/);
-      const jsonString = jsonMatch ? jsonMatch[1] : aiResponse;
-      recipe = JSON.parse(jsonString);
+      // Remove markdown code block wrappers if present
+      let cleanResponse = aiResponse.trim();
+      
+      // Try to extract JSON from markdown code blocks
+      const jsonMatch = cleanResponse.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+      if (jsonMatch) {
+        cleanResponse = jsonMatch[1].trim();
+      }
+      
+      // If still has backticks, try to find JSON object boundaries
+      if (cleanResponse.includes('```')) {
+        const jsonStart = cleanResponse.indexOf('{');
+        const jsonEnd = cleanResponse.lastIndexOf('}');
+        if (jsonStart !== -1 && jsonEnd !== -1) {
+          cleanResponse = cleanResponse.substring(jsonStart, jsonEnd + 1);
+        }
+      }
+      
+      recipe = JSON.parse(cleanResponse);
     } catch (parseError) {
       console.error("Failed to parse AI response:", parseError);
-      // Fallback: try to parse the raw response
-      recipe = JSON.parse(aiResponse);
+      console.error("Raw response:", aiResponse);
+      throw new Error("Failed to parse recipe from AI response");
     }
 
     // Validate the recipe structure
