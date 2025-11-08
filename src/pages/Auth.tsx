@@ -9,8 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { useTranslation } from "react-i18next";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -19,7 +17,6 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useTranslation();
 
   useEffect(() => {
     // Check if user is already logged in
@@ -118,9 +115,8 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 flex items-center justify-center p-4">
-      <div className="absolute top-4 right-4 flex gap-2">
+      <div className="absolute top-4 right-4">
         <ThemeToggle />
-        <LanguageSwitcher />
       </div>
       
       <div className="w-full max-w-md">
@@ -129,27 +125,27 @@ const Auth = () => {
             <ChefHat className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-            {t('appTitle')}
+            AI Recipe Generator
           </h1>
-          <p className="text-muted-foreground">{t('signInDescription')}</p>
+          <p className="text-muted-foreground">Enter your credentials to access your recipe collection</p>
         </div>
 
         <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">{t('signIn')}</TabsTrigger>
-            <TabsTrigger value="signup">{t('signUp')}</TabsTrigger>
+            <TabsTrigger value="signin">Sign In</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
 
           <TabsContent value="signin">
             <Card>
               <CardHeader>
-                <CardTitle>{t('welcomeBack')}</CardTitle>
-                <CardDescription>{t('signInDescription')}</CardDescription>
+                <CardTitle>Welcome Back</CardTitle>
+                <CardDescription>Enter your credentials to access your recipe collection</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email">{t('email')}</Label>
+                    <Label htmlFor="signin-email">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -164,7 +160,7 @@ const Auth = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password">{t('password')}</Label>
+                    <Label htmlFor="signin-password">Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -180,7 +176,7 @@ const Auth = () => {
                     </div>
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? `${t('signIn')}...` : t('signIn')}
+                    {isLoading ? "Signing in..." : "Sign In"}
                   </Button>
                 </form>
               </CardContent>
@@ -190,8 +186,8 @@ const Auth = () => {
           <TabsContent value="signup">
             <Card>
               <CardHeader>
-                <CardTitle>{t('signUp')}</CardTitle>
-                <CardDescription>{t('signUpDescription')}</CardDescription>
+                <CardTitle>Sign Up</CardTitle>
+                <CardDescription>Create an account to start saving your favorite recipes</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSignUp} className="space-y-4">
@@ -210,7 +206,7 @@ const Auth = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">{t('email')}</Label>
+                    <Label htmlFor="signup-email">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -225,7 +221,7 @@ const Auth = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">{t('password')}</Label>
+                    <Label htmlFor="signup-password">Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -244,7 +240,7 @@ const Auth = () => {
                     </p>
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? `${t('signUp')}...` : t('signUp')}
+                    {isLoading ? "Signing up..." : "Sign Up"}
                   </Button>
                 </form>
               </CardContent>

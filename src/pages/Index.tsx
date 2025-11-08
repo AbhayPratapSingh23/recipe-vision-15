@@ -38,7 +38,7 @@ const Index = () => {
   const [showHistory, setShowHistory] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { i18n } = useTranslation();
 
   useEffect(() => {
     // Check authentication
@@ -208,7 +208,7 @@ const Index = () => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-recipe", {
-        body: { image: selectedImage },
+        body: { image: selectedImage, language: i18n.language },
       });
 
       if (error) throw error;
@@ -310,19 +310,19 @@ const Index = () => {
               onClick={() => setShowHistory(!showHistory)}
             >
               <History className="w-4 h-4 mr-2" />
-              {t('savedRecipes')}
+              Recipe History
             </Button>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" />
-              {t('logout')}
+              Logout
             </Button>
           </div>
         </div>
         <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-          {t('appTitle')}
+          AI Recipe Generator
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          {t('appDescription')}
+          Transform Food Photos into Delicious Recipes
         </p>
       </header>
 
@@ -359,9 +359,9 @@ const Index = () => {
                           <Upload className="w-12 h-12 text-primary" />
                         </div>
                         <div>
-                          <p className="text-lg font-semibold mb-1">{t('uploadImage')}</p>
+                          <p className="text-lg font-semibold mb-1">Upload Food Image</p>
                           <p className="text-sm text-muted-foreground">
-                            {t('dragDrop')}
+                            Click to upload an image
                           </p>
                         </div>
                       </>
@@ -381,12 +381,12 @@ const Index = () => {
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        {t('generating')}
+                        Generating Recipe...
                       </>
                     ) : (
                       <>
                         <ChefHat className="mr-2 h-5 w-5" />
-                        {t('generateRecipe')}
+                        Generate Recipe
                       </>
                     )}
                   </Button>
@@ -468,7 +468,7 @@ const Index = () => {
                 {/* Serving Size Adjuster */}
                 <div className="bg-accent/10 rounded-lg p-4 mb-6">
                   <div className="flex items-center justify-between max-w-xs mx-auto">
-                    <span className="text-sm font-medium text-muted-foreground">{t('servings')}:</span>
+                    <span className="text-sm font-medium text-muted-foreground">Servings:</span>
                     <div className="flex items-center gap-3">
                       <Button
                         variant="outline"
@@ -495,7 +495,7 @@ const Index = () => {
                   <div className="bg-secondary/30 rounded-lg p-4">
                     <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-accent"></span>
-                      {t('nutritionalValues')} (per serving)
+                      Nutritional Values (per serving)
                     </h3>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                       <div className="text-center">
@@ -525,7 +525,7 @@ const Index = () => {
                   <div>
                     <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-primary"></span>
-                      {t('ingredients')}
+                      Ingredients
                     </h3>
                     <ul className="space-y-3 ml-4">
                       {recipe.ingredients.map((ingredient, index) => (
@@ -536,7 +536,7 @@ const Index = () => {
                           </div>
                           {recipe.substitutes && recipe.substitutes[ingredient] && (
                             <div className="ml-5 text-sm text-muted-foreground">
-                              <span className="italic">{t('substitutes')}: {recipe.substitutes[ingredient].join(", ")}</span>
+                              <span className="italic">Substitutes: {recipe.substitutes[ingredient].join(", ")}</span>
                             </div>
                           )}
                         </li>
@@ -548,7 +548,7 @@ const Index = () => {
                   <div>
                     <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-accent"></span>
-                      {t('instructions')}
+                      Instructions
                     </h3>
                     <ol className="space-y-3 ml-4">
                       {recipe.instructions.map((instruction, index) => (
@@ -583,7 +583,7 @@ const Index = () => {
           {showHistory && savedRecipes.length > 0 && (
             <Card className="shadow-xl">
               <CardContent className="p-8">
-                <h2 className="text-3xl font-bold text-primary mb-6">{t('savedRecipes')}</h2>
+                <h2 className="text-3xl font-bold text-primary mb-6">Your Saved Recipes</h2>
                 <div className="grid gap-4">
                   {savedRecipes.map((savedRecipe) => (
                     <Card
@@ -602,7 +602,7 @@ const Index = () => {
                           <div className="flex-1">
                             <h3 className="text-xl font-semibold mb-2">{savedRecipe.title}</h3>
                             <p className="text-sm text-muted-foreground mb-2">
-                              {savedRecipe.ingredients.length} {t('ingredients')} • {savedRecipe.instructions.length} {t('instructions')} • {t('servings')} {savedRecipe.servingSize}
+                              {savedRecipe.ingredients.length} ingredients • {savedRecipe.instructions.length} steps • Servings: {savedRecipe.servingSize}
                             </p>
                             {savedRecipe.created_at && (
                               <p className="text-xs text-muted-foreground">
@@ -639,9 +639,9 @@ const Index = () => {
             <Card className="shadow-xl">
               <CardContent className="p-8 text-center">
                 <History className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mb-2">{t('noRecipes')}</h3>
+                <h3 className="text-xl font-semibold mb-2">No Recipes Yet</h3>
                 <p className="text-muted-foreground">
-                  {t('noRecipes')}
+                  No saved recipes yet. Generate and save your first recipe!
                 </p>
               </CardContent>
             </Card>

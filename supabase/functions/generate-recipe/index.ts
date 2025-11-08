@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { image } = await req.json();
+    const { image, language = "en" } = await req.json();
 
     if (!image) {
       return new Response(
@@ -136,7 +136,7 @@ serve(async (req) => {
               content: [
                 {
                   type: "text",
-                  text: "Please analyze this food image and generate a complete recipe with: 1) A title, 2) Serving size (number of servings), 3) List of ingredients with measurements, 4) Step-by-step cooking instructions, 5) Possible substitute ingredients for each main ingredient (at least 1-2 alternatives when applicable), 6) Estimated nutritional values per serving (calories, protein, carbs, fat, fiber). Return only valid JSON.",
+                  text: `Please analyze this food image and generate a complete recipe with: 1) A title, 2) Serving size (number of servings), 3) List of ingredients with measurements, 4) Step-by-step cooking instructions, 5) Possible substitute ingredients for each main ingredient (at least 1-2 alternatives when applicable), 6) Estimated nutritional values per serving (calories, protein, carbs, fat, fiber). IMPORTANT: Generate the ingredients and instructions in ${language === "en" ? "English" : language === "hi" ? "Hindi" : language === "ta" ? "Tamil" : language === "te" ? "Telugu" : language === "bn" ? "Bengali" : language === "mr" ? "Marathi" : "English"} language. Return only valid JSON.`,
                 },
                 {
                   type: "image_url",

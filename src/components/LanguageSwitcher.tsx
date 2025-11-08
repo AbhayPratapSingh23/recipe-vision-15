@@ -23,12 +23,15 @@ export const LanguageSwitcher = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
+        <Button variant="outline" size="icon" title="Recipe Language">
           <Languages className="h-[1.2rem] w-[1.2rem]" />
-          <span className="sr-only">Switch language</span>
+          <span className="sr-only">Select recipe language</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
+          Recipe Language
+        </div>
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
