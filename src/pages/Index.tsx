@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, Loader2, ChefHat, LogOut, History, Trash2 } from "lucide-react";
+import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -36,9 +36,18 @@ const Index = () => {
   const [currentServings, setCurrentServings] = useState<number>(1);
   const [isLoading, setIsLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [stream, setStream] = useState<MediaStream | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { i18n } = useTranslation();
+
+  const sampleImages = [
+    { id: 1, url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400", name: "Salad" },
+    { id: 2, url: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400", name: "Pizza" },
+    { id: 3, url: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400", name: "Pancakes" },
+    { id: 4, url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400", name: "Asian Cuisine" },
+  ];
 
   useEffect(() => {
     // Check authentication
@@ -201,6 +210,72 @@ const Index = () => {
       reader.readAsDataURL(file);
     }
   };
+
+  const handleSampleImageSelect = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+    setRecipe(null);
+    toast({
+      title: "Sample image selected",
+      description: "Click Generate Recipe to continue",
+    });
+  };
+
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "environment" } 
+      });
+      setStream(mediaStream);
+      setIsCameraActive(true);
+      
+      const video = document.getElementById("camera-preview") as HTMLVideoElement;
+      if (video) {
+        video.srcObject = mediaStream;
+      }
+    } catch (error) {
+      console.error("Error accessing camera:", error);
+      toast({
+        title: "Camera access denied",
+        description: "Please allow camera access to use this feature",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setIsCameraActive(false);
+  };
+
+  const capturePhoto = () => {
+    const video = document.getElementById("camera-preview") as HTMLVideoElement;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.drawImage(video, 0, 0);
+      const imageData = canvas.toDataURL("image/jpeg");
+      setSelectedImage(imageData);
+      setRecipe(null);
+      stopCamera();
+      toast({
+        title: "Photo captured",
+        description: "Click Generate Recipe to continue",
+      });
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [stream]);
 
   const generateRecipe = async () => {
     if (!selectedImage) return;
@@ -392,6 +467,94 @@ const Index = () => {
                   </Button>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Sample Food Images Section */}
+          <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg">
+            <CardContent className="p-8">
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+                  <Image className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Choose from Sample Images</h3>
+                <p className="text-sm text-muted-foreground">
+                  Try our AI with these sample food images
+                </p>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {sampleImages.map((sample) => (
+                  <div
+                    key={sample.id}
+                    onClick={() => handleSampleImageSelect(sample.url)}
+                    className="cursor-pointer group relative overflow-hidden rounded-lg border-2 border-border hover:border-primary transition-all duration-300"
+                  >
+                    <img
+                      src={sample.url}
+                      alt={sample.name}
+                      className="w-full h-32 object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <p className="text-white font-medium text-sm">{sample.name}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Camera Capture Section */}
+          <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg">
+            <CardContent className="p-8">
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+                  <Camera className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Capture with Camera</h3>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Take a photo of your food directly
+                </p>
+
+                {!isCameraActive ? (
+                  <Button
+                    onClick={startCamera}
+                    size="lg"
+                    variant="outline"
+                    className="hover:bg-primary hover:text-primary-foreground transition-all"
+                  >
+                    <Camera className="mr-2 h-5 w-5" />
+                    Open Camera
+                  </Button>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="relative max-w-md mx-auto rounded-lg overflow-hidden bg-black">
+                      <video
+                        id="camera-preview"
+                        autoPlay
+                        playsInline
+                        className="w-full h-auto"
+                      />
+                    </div>
+                    <div className="flex gap-3 justify-center">
+                      <Button
+                        onClick={capturePhoto}
+                        size="lg"
+                        className="bg-gradient-to-r from-primary to-accent"
+                      >
+                        <Camera className="mr-2 h-5 w-5" />
+                        Capture Photo
+                      </Button>
+                      <Button
+                        onClick={stopCamera}
+                        size="lg"
+                        variant="outline"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
