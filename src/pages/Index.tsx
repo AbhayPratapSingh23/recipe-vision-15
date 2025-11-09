@@ -228,10 +228,16 @@ const Index = () => {
       setStream(mediaStream);
       setIsCameraActive(true);
       
-      const video = document.getElementById("camera-preview") as HTMLVideoElement;
-      if (video) {
-        video.srcObject = mediaStream;
-      }
+      // Wait a bit for the DOM to update
+      setTimeout(() => {
+        const video = document.getElementById("camera-preview") as HTMLVideoElement;
+        if (video) {
+          video.srcObject = mediaStream;
+          video.play().catch(err => {
+            console.error("Error playing video:", err);
+          });
+        }
+      }, 100);
     } catch (error) {
       console.error("Error accessing camera:", error);
       toast({
@@ -532,7 +538,8 @@ const Index = () => {
                         id="camera-preview"
                         autoPlay
                         playsInline
-                        className="w-full h-auto"
+                        muted
+                        className="w-full h-auto min-h-[300px]"
                       />
                     </div>
                     <div className="flex gap-3 justify-center">
