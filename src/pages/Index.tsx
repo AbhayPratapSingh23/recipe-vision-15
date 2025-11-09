@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, Image } from "lucide-react";
+import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, Image, SwitchCamera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -38,6 +38,7 @@ const Index = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
   const navigate = useNavigate();
   const { toast } = useToast();
   const { i18n } = useTranslation();
@@ -220,11 +221,16 @@ const Index = () => {
     });
   };
 
-  const startCamera = async () => {
+  const startCamera = async (mode: "environment" | "user" = facingMode) => {
     try {
+      // Stop existing stream if any
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
-          facingMode: "environment",
+          facingMode: mode,
           width: { ideal: 1280 },
           height: { ideal: 720 }
         } 
@@ -251,6 +257,12 @@ const Index = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const flipCamera = async () => {
+    const newMode = facingMode === "environment" ? "user" : "environment";
+    setFacingMode(newMode);
+    await startCamera(newMode);
   };
 
   const stopCamera = () => {
@@ -528,7 +540,7 @@ const Index = () => {
 
                 {!isCameraActive ? (
                   <Button
-                    onClick={startCamera}
+                    onClick={() => startCamera()}
                     size="lg"
                     variant="outline"
                     className="hover:bg-primary hover:text-primary-foreground transition-all"
@@ -547,6 +559,14 @@ const Index = () => {
                         className="w-full h-auto min-h-[300px] bg-black"
                         style={{ objectFit: 'cover' }}
                       />
+                      <Button
+                        onClick={flipCamera}
+                        size="icon"
+                        variant="secondary"
+                        className="absolute top-4 right-4 rounded-full"
+                      >
+                        <SwitchCamera className="h-5 w-5" />
+                      </Button>
                     </div>
                     <div className="flex gap-3 justify-center">
                       <Button
