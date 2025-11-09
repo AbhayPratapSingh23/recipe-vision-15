@@ -223,7 +223,11 @@ const Index = () => {
   const startCamera = async () => {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "environment" } 
+        video: { 
+          facingMode: "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
       });
       setStream(mediaStream);
       setIsCameraActive(true);
@@ -233,6 +237,7 @@ const Index = () => {
         const video = document.getElementById("camera-preview") as HTMLVideoElement;
         if (video) {
           video.srcObject = mediaStream;
+          video.setAttribute('playsinline', 'true');
           video.play().catch(err => {
             console.error("Error playing video:", err);
           });
@@ -539,7 +544,8 @@ const Index = () => {
                         autoPlay
                         playsInline
                         muted
-                        className="w-full h-auto min-h-[300px]"
+                        className="w-full h-auto min-h-[300px] bg-black"
+                        style={{ objectFit: 'cover' }}
                       />
                     </div>
                     <div className="flex gap-3 justify-center">
