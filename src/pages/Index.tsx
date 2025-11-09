@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, Image, SwitchCamera } from "lucide-react";
+import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, Image, SwitchCamera, ZoomIn, ZoomOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -39,6 +39,7 @@ const Index = () => {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
+  const [zoom, setZoom] = useState<number>(1);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { i18n } = useTranslation();
@@ -263,6 +264,42 @@ const Index = () => {
     const newMode = facingMode === "environment" ? "user" : "environment";
     setFacingMode(newMode);
     await startCamera(newMode);
+  };
+
+  const handleZoom = (direction: 'in' | 'out') => {
+    if (!stream) return;
+    
+    const videoTrack = stream.getVideoTracks()[0];
+    const capabilities = videoTrack.getCapabilities() as any;
+    
+    if (!capabilities.zoom) {
+      toast({
+        title: "Zoom not supported",
+        description: "Your device doesn't support camera zoom",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const settings = videoTrack.getSettings() as any;
+    const currentZoom = settings.zoom || 1;
+    const step = 0.5;
+    
+    let newZoom = direction === 'in' 
+      ? Math.min(currentZoom + step, capabilities.zoom.max)
+      : Math.max(currentZoom - step, capabilities.zoom.min);
+    
+    videoTrack.applyConstraints({
+      advanced: [{ zoom: newZoom } as any]
+    }).then(() => {
+      setZoom(newZoom);
+    }).catch(() => {
+      toast({
+        title: "Zoom failed",
+        description: "Could not apply zoom level",
+        variant: "destructive",
+      });
+    });
   };
 
   const stopCamera = () => {
@@ -567,6 +604,24 @@ const Index = () => {
                       >
                         <SwitchCamera className="h-5 w-5" />
                       </Button>
+                      <div className="absolute bottom-4 right-4 flex flex-col gap-2">
+                        <Button
+                          onClick={() => handleZoom('in')}
+                          size="icon"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          <ZoomIn className="h-5 w-5" />
+                        </Button>
+                        <Button
+                          onClick={() => handleZoom('out')}
+                          size="icon"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          <ZoomOut className="h-5 w-5" />
+                        </Button>
+                      </div>
                     </div>
                     <div className="flex gap-3 justify-center">
                       <Button
