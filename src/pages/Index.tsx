@@ -462,7 +462,7 @@ const Index = () => {
           </div>
         </div>
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-          Transform Food Photos into Delicious Recipes ✨
+          Transform Food Photos into Delicious Recipes
         </p>
       </header>
 
@@ -497,7 +497,7 @@ const Index = () => {
                       <>
                         <Upload className="w-16 h-16 text-primary" />
                         <div>
-                          <p className="text-lg md:text-xl font-semibold mb-1">Upload Food Image 📸</p>
+                          <p className="text-lg md:text-xl font-semibold mb-1">Upload Food Image</p>
                           <p className="text-sm md:text-base text-muted-foreground">
                             Click to upload or drag & drop
                           </p>
@@ -524,7 +524,7 @@ const Index = () => {
                     ) : (
                       <>
                         <ChefHat className="mr-2 h-5 w-5" />
-                        Generate Recipe ✨
+                        Generate Recipe
                       </>
                     )}
                   </Button>
@@ -537,7 +537,7 @@ const Index = () => {
           <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
             <CardContent className="p-6 md:p-8">
               <div className="text-center mb-6">
-                <h3 className="text-xl md:text-2xl font-semibold mb-2">Choose from Sample Images 🍽️</h3>
+                <h3 className="text-xl md:text-2xl font-semibold mb-2">Choose from Sample Images</h3>
                 <p className="text-sm md:text-base text-muted-foreground">
                   Try our AI with these delicious samples
                 </p>
@@ -567,7 +567,7 @@ const Index = () => {
           <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
             <CardContent className="p-6 md:p-8">
               <div className="text-center">
-                <h3 className="text-xl md:text-2xl font-semibold mb-2">Capture with Camera 📷</h3>
+                <h3 className="text-xl md:text-2xl font-semibold mb-2">Capture with Camera</h3>
                 <p className="text-sm md:text-base text-muted-foreground mb-6">
                   Take a photo of your food directly
                 </p>
@@ -703,7 +703,7 @@ const Index = () => {
             <Card className="shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/20">
               <CardContent className="p-6 md:p-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-                  <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{recipe.title} 🍴</h2>
+                  <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{recipe.title}</h2>
                   <div className="flex gap-2 flex-wrap">
                     <Button onClick={downloadIngredients} variant="outline" size="sm" className="transition-all">
                       Download Ingredients
@@ -717,7 +717,7 @@ const Index = () => {
                 {/* Serving Size Adjuster */}
                 <div className="bg-gradient-to-r from-accent/10 via-primary/10 to-accent/10 rounded-xl p-4 md:p-6 mb-6 border border-primary/20 shadow-lg">
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-md mx-auto">
-                    <span className="text-sm md:text-base font-medium text-foreground">👥 Servings:</span>
+                    <span className="text-sm md:text-base font-medium text-foreground">Servings:</span>
                     <div className="flex items-center gap-3">
                       <Button
                         variant="outline"
@@ -745,7 +745,7 @@ const Index = () => {
                   {/* Nutritional Values */}
                   <div className="bg-gradient-to-br from-success/10 to-success/5 rounded-xl p-4 md:p-6 border border-success/20 shadow-lg">
                     <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
-                      📊 Nutritional Values (per serving)
+                      Nutritional Values (per serving)
                     </h3>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 md:gap-4">
                       <div className="text-center p-3 bg-card/50 rounded-lg transition-all">
@@ -774,7 +774,7 @@ const Index = () => {
                   {/* Ingredients */}
                   <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-4 md:p-6 border border-primary/20 shadow-lg">
                     <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
-                      🛒 Ingredients
+                      Ingredients
                     </h3>
                     <ul className="space-y-3">
                       {recipe.ingredients.map((ingredient, index) => (
@@ -785,7 +785,7 @@ const Index = () => {
                           </div>
                           {recipe.substitutes && recipe.substitutes[ingredient] && (
                             <div className="ml-7 text-xs md:text-sm text-muted-foreground bg-muted/30 p-2 rounded">
-                              <span className="italic">💡 Substitutes: {recipe.substitutes[ingredient].join(", ")}</span>
+                              <span className="italic">Substitutes: {recipe.substitutes[ingredient].join(", ")}</span>
                             </div>
                           )}
                         </li>
@@ -794,14 +794,13 @@ const Index = () => {
                   </div>
 
                   {/* Instructions */}
-                  <div className="bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl p-4 md:p-6 border border-accent/20 shadow-lg animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                    <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
-                      👨‍🍳 Instructions
+                  <div className="bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl p-4 md:p-6 border border-accent/20 shadow-lg">
+                    <h3 className="text-lg md:text-xl font-semibold mb-4">
+                      Instructions
                     </h3>
                     <ol className="space-y-4">
                       {recipe.instructions.map((instruction, index) => (
-                        <li key={index} className="flex items-start gap-3 md:gap-4 p-3 rounded-lg hover:bg-card/50 transition-all hover:scale-[1.02]">
+                        <li key={index} className="flex items-start gap-3 md:gap-4 p-3 rounded-lg hover:bg-card/50 transition-all">
                           <span className="flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-full bg-gradient-to-br from-accent to-accent-glow text-white flex items-center justify-center text-sm md:text-base font-bold shadow-lg">
                             {index + 1}
                           </span>
@@ -821,7 +820,7 @@ const Index = () => {
                     }}
                     className="w-full sm:w-auto transition-all hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white border-2"
                   >
-                    ✨ Generate Another Recipe
+                    Generate Another Recipe
                   </Button>
                 </div>
               </CardContent>
@@ -832,7 +831,7 @@ const Index = () => {
           {showHistory && savedRecipes.length > 0 && (
             <Card className="shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/20">
               <CardContent className="p-6 md:p-8">
-                <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-6">📚 Your Saved Recipes</h2>
+                <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-6">Your Saved Recipes</h2>
                 <div className="grid gap-4">
                   {savedRecipes.map((savedRecipe) => (
                     <Card
@@ -851,11 +850,11 @@ const Index = () => {
                           <div className="flex-1 min-w-0">
                             <h3 className="text-lg md:text-xl font-semibold mb-2 text-primary">{savedRecipe.title}</h3>
                             <p className="text-xs md:text-sm text-muted-foreground mb-2">
-                              📋 {savedRecipe.ingredients.length} ingredients • 📝 {savedRecipe.instructions.length} steps • 👥 {savedRecipe.servingSize} servings
+                              {savedRecipe.ingredients.length} ingredients • {savedRecipe.instructions.length} steps • {savedRecipe.servingSize} servings
                             </p>
                             {savedRecipe.created_at && (
                               <p className="text-xs text-muted-foreground">
-                                🕐 Created {new Date(savedRecipe.created_at).toLocaleDateString()}
+                                Created {new Date(savedRecipe.created_at).toLocaleDateString()}
                               </p>
                             )}
                           </div>
