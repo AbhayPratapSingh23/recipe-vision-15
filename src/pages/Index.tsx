@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, Image, SwitchCamera, ZoomIn, ZoomOut } from "lucide-react";
+import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, SwitchCamera, ZoomIn, ZoomOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -429,19 +429,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 relative overflow-hidden">
-      {/* Animated Background Decorations */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '0s' }}></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-primary-glow/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-      </div>
-
       {/* Hero Section */}
       <header className="container mx-auto px-4 py-8 md:py-16 text-center relative z-10">
         <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
           <div className="flex-1 hidden md:block"></div>
-          <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-primary to-accent shadow-lg animate-bounce-in">
-            <ChefHat className="w-8 h-8 md:w-10 md:h-10 text-white" />
+          <div className="flex-1 flex justify-center gap-2">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+              AI Recipe Generator
+            </h1>
           </div>
           <div className="flex-1 flex justify-center md:justify-end gap-2 flex-wrap">
             <ThemeToggle />
@@ -450,7 +445,7 @@ const Index = () => {
               variant="outline"
               size="sm"
               onClick={() => setShowHistory(!showHistory)}
-              className="transition-all hover:scale-105 hover:border-primary"
+              className="transition-all hover:border-primary"
             >
               <History className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Recipe History</span>
@@ -459,17 +454,14 @@ const Index = () => {
               variant="outline" 
               size="sm" 
               onClick={handleLogout}
-              className="transition-all hover:scale-105 hover:border-destructive"
+              className="transition-all hover:border-destructive"
             >
               <LogOut className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Logout</span>
             </Button>
           </div>
         </div>
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-fade-in-up bg-[length:200%_auto] animate-shimmer">
-          AI Recipe Generator
-        </h1>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '0.2s' }}>
+        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
           Transform Food Photos into Delicious Recipes ✨
         </p>
       </header>
@@ -478,7 +470,7 @@ const Index = () => {
       <main className="container mx-auto px-4 pb-16 relative z-10">
         <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
           {/* Upload Section */}
-          <Card className="border-2 border-dashed hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95 animate-fade-in">
+          <Card className="border-2 border-dashed hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
             <CardContent className="p-6 md:p-8">
               <div className="text-center">
                 <input
@@ -503,9 +495,7 @@ const Index = () => {
                       </div>
                     ) : (
                       <>
-                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg animate-pulse-glow">
-                          <Upload className="w-12 h-12 text-white" />
-                        </div>
+                        <Upload className="w-16 h-16 text-primary" />
                         <div>
                           <p className="text-lg md:text-xl font-semibold mb-1">Upload Food Image 📸</p>
                           <p className="text-sm md:text-base text-muted-foreground">
@@ -524,7 +514,7 @@ const Index = () => {
                     onClick={generateRecipe}
                     disabled={isLoading}
                     size="lg"
-                    className="bg-gradient-to-r from-primary via-accent to-primary hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl animate-pulse-glow bg-[length:200%_auto] animate-shimmer"
+                    className="bg-gradient-to-r from-primary via-accent to-primary transition-all duration-300 shadow-lg hover:shadow-xl"
                   >
                     {isLoading ? (
                       <>
@@ -544,24 +534,20 @@ const Index = () => {
           </Card>
 
           {/* Sample Food Images Section */}
-          <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
             <CardContent className="p-6 md:p-8">
               <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent shadow-lg mb-4 animate-bounce-in">
-                  <Image className="w-8 h-8 text-white" />
-                </div>
                 <h3 className="text-xl md:text-2xl font-semibold mb-2">Choose from Sample Images 🍽️</h3>
                 <p className="text-sm md:text-base text-muted-foreground">
                   Try our AI with these delicious samples
                 </p>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                {sampleImages.map((sample, idx) => (
+                {sampleImages.map((sample) => (
                   <div
                     key={sample.id}
                     onClick={() => handleSampleImageSelect(sample.url)}
-                    className="cursor-pointer group relative overflow-hidden rounded-xl border-2 border-border hover:border-primary transition-all duration-300 shadow-md hover:shadow-xl animate-scale-in"
-                    style={{ animationDelay: `${0.1 + idx * 0.05}s` }}
+                    className="cursor-pointer group relative overflow-hidden rounded-xl border-2 border-border hover:border-primary transition-all duration-300 shadow-md hover:shadow-xl"
                   >
                     <img
                       src={sample.url}
@@ -578,12 +564,9 @@ const Index = () => {
           </Card>
 
           {/* Camera Capture Section */}
-          <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
             <CardContent className="p-6 md:p-8">
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent shadow-lg mb-4 animate-bounce-in">
-                  <Camera className="w-8 h-8 text-white" />
-                </div>
                 <h3 className="text-xl md:text-2xl font-semibold mb-2">Capture with Camera 📷</h3>
                 <p className="text-sm md:text-base text-muted-foreground mb-6">
                   Take a photo of your food directly
@@ -594,7 +577,7 @@ const Index = () => {
                     onClick={() => startCamera()}
                     size="lg"
                     variant="outline"
-                    className="hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white transition-all duration-300 hover:scale-105 hover:shadow-lg border-2"
+                    className="hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white transition-all duration-300 hover:shadow-lg border-2"
                   >
                     <Camera className="mr-2 h-5 w-5" />
                     Open Camera
@@ -641,7 +624,7 @@ const Index = () => {
                       <Button
                         onClick={capturePhoto}
                         size="lg"
-                        className="bg-gradient-to-r from-primary via-accent to-primary hover:scale-105 transition-all duration-300 shadow-lg bg-[length:200%_auto] animate-shimmer"
+                        className="bg-gradient-to-r from-primary via-accent to-primary transition-all duration-300 shadow-lg"
                       >
                         <Camera className="mr-2 h-5 w-5" />
                         Capture Photo
@@ -717,22 +700,22 @@ const Index = () => {
 
           {/* Recipe Display */}
           {recipe && !isLoading && (
-            <Card className="shadow-2xl animate-bounce-in backdrop-blur-sm bg-card/95 border-2 border-primary/20">
+            <Card className="shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/20">
               <CardContent className="p-6 md:p-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
                   <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{recipe.title} 🍴</h2>
                   <div className="flex gap-2 flex-wrap">
-                    <Button onClick={downloadIngredients} variant="outline" size="sm" className="hover:scale-105 transition-all">
+                    <Button onClick={downloadIngredients} variant="outline" size="sm" className="transition-all">
                       Download Ingredients
                     </Button>
-                    <Button onClick={downloadRecipe} variant="outline" size="sm" className="hover:scale-105 transition-all">
+                    <Button onClick={downloadRecipe} variant="outline" size="sm" className="transition-all">
                       Download Recipe
                     </Button>
                   </div>
                 </div>
 
                 {/* Serving Size Adjuster */}
-                <div className="bg-gradient-to-r from-accent/10 via-primary/10 to-accent/10 rounded-xl p-4 md:p-6 mb-6 border border-primary/20 shadow-lg animate-fade-in">
+                <div className="bg-gradient-to-r from-accent/10 via-primary/10 to-accent/10 rounded-xl p-4 md:p-6 mb-6 border border-primary/20 shadow-lg">
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-md mx-auto">
                     <span className="text-sm md:text-base font-medium text-foreground">👥 Servings:</span>
                     <div className="flex items-center gap-3">
@@ -741,7 +724,7 @@ const Index = () => {
                         size="sm"
                         onClick={() => setCurrentServings(Math.max(1, currentServings - 1))}
                         disabled={currentServings <= 1}
-                        className="hover:scale-110 transition-all hover:bg-primary hover:text-white"
+                        className="transition-all hover:bg-primary hover:text-white"
                       >
                         -
                       </Button>
@@ -750,7 +733,7 @@ const Index = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => setCurrentServings(currentServings + 1)}
-                        className="hover:scale-110 transition-all hover:bg-primary hover:text-white"
+                        className="transition-all hover:bg-primary hover:text-white"
                       >
                         +
                       </Button>
@@ -760,29 +743,28 @@ const Index = () => {
 
                 <div className="space-y-6">
                   {/* Nutritional Values */}
-                  <div className="bg-gradient-to-br from-success/10 to-success/5 rounded-xl p-4 md:p-6 border border-success/20 shadow-lg animate-fade-in">
+                  <div className="bg-gradient-to-br from-success/10 to-success/5 rounded-xl p-4 md:p-6 border border-success/20 shadow-lg">
                     <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
                       📊 Nutritional Values (per serving)
                     </h3>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 md:gap-4">
-                      <div className="text-center p-3 bg-card/50 rounded-lg hover:scale-105 transition-all">
+                      <div className="text-center p-3 bg-card/50 rounded-lg transition-all">
                         <p className="text-xs md:text-sm text-muted-foreground mb-1">Calories</p>
                         <p className="text-base md:text-lg font-bold text-success">{recipe.nutritionalValues.calories}</p>
                       </div>
-                      <div className="text-center p-3 bg-card/50 rounded-lg hover:scale-105 transition-all">
+                      <div className="text-center p-3 bg-card/50 rounded-lg transition-all">
                         <p className="text-xs md:text-sm text-muted-foreground mb-1">Protein</p>
                         <p className="text-base md:text-lg font-bold text-success">{recipe.nutritionalValues.protein}</p>
                       </div>
-                      <div className="text-center p-3 bg-card/50 rounded-lg hover:scale-105 transition-all">
+                      <div className="text-center p-3 bg-card/50 rounded-lg transition-all">
                         <p className="text-xs md:text-sm text-muted-foreground mb-1">Carbs</p>
                         <p className="text-base md:text-lg font-bold text-success">{recipe.nutritionalValues.carbs}</p>
                       </div>
-                      <div className="text-center p-3 bg-card/50 rounded-lg hover:scale-105 transition-all">
+                      <div className="text-center p-3 bg-card/50 rounded-lg transition-all">
                         <p className="text-xs md:text-sm text-muted-foreground mb-1">Fat</p>
                         <p className="text-base md:text-lg font-bold text-success">{recipe.nutritionalValues.fat}</p>
                       </div>
-                      <div className="text-center p-3 bg-card/50 rounded-lg hover:scale-105 transition-all">
+                      <div className="text-center p-3 bg-card/50 rounded-lg transition-all">
                         <p className="text-xs md:text-sm text-muted-foreground mb-1">Fiber</p>
                         <p className="text-base md:text-lg font-bold text-success">{recipe.nutritionalValues.fiber}</p>
                       </div>
@@ -790,9 +772,8 @@ const Index = () => {
                   </div>
 
                   {/* Ingredients */}
-                  <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-4 md:p-6 border border-primary/20 shadow-lg animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                  <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-4 md:p-6 border border-primary/20 shadow-lg">
                     <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
                       🛒 Ingredients
                     </h3>
                     <ul className="space-y-3">
@@ -838,7 +819,7 @@ const Index = () => {
                       setSelectedImage(null);
                       setRecipe(null);
                     }}
-                    className="w-full sm:w-auto hover:scale-105 transition-all hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white border-2"
+                    className="w-full sm:w-auto transition-all hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white border-2"
                   >
                     ✨ Generate Another Recipe
                   </Button>
@@ -849,15 +830,14 @@ const Index = () => {
 
           {/* Recipe History */}
           {showHistory && savedRecipes.length > 0 && (
-            <Card className="shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/20 animate-slide-in-left">
+            <Card className="shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/20">
               <CardContent className="p-6 md:p-8">
                 <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-6">📚 Your Saved Recipes</h2>
                 <div className="grid gap-4">
-                  {savedRecipes.map((savedRecipe, idx) => (
+                  {savedRecipes.map((savedRecipe) => (
                     <Card
                       key={savedRecipe.id}
-                      className="hover:shadow-xl transition-all cursor-pointer border-2 hover:border-primary/50 animate-fade-in"
-                      style={{ animationDelay: `${idx * 0.05}s` }}
+                      className="hover:shadow-xl transition-all cursor-pointer border-2 hover:border-primary/50"
                     >
                       <CardContent className="p-4 md:p-5">
                         <div className="flex flex-col sm:flex-row items-start gap-4">
@@ -865,7 +845,7 @@ const Index = () => {
                             <img
                               src={savedRecipe.image_url}
                               alt={savedRecipe.title}
-                              className="w-full sm:w-24 h-32 sm:h-24 rounded-lg object-cover shadow-md hover:scale-105 transition-transform"
+                              className="w-full sm:w-24 h-32 sm:h-24 rounded-lg object-cover shadow-md transition-transform"
                             />
                           )}
                           <div className="flex-1 min-w-0">
@@ -884,7 +864,7 @@ const Index = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => loadSavedRecipe(savedRecipe)}
-                              className="flex-1 sm:flex-none hover:scale-105 transition-all hover:bg-primary hover:text-white"
+                              className="flex-1 sm:flex-none transition-all hover:bg-primary hover:text-white"
                             >
                               View
                             </Button>
@@ -892,7 +872,7 @@ const Index = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => savedRecipe.id && deleteRecipe(savedRecipe.id)}
-                              className="hover:scale-105 transition-all hover:bg-destructive hover:text-white"
+                              className="transition-all hover:bg-destructive hover:text-white"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
