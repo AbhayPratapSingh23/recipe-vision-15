@@ -428,396 +428,400 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[image:var(--warm-gradient)] relative">
-      {/* Compact Sticky Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50 shadow-sm">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent shadow-[var(--card-shadow)]">
-                <ChefHat className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  Recipe Vision
-                </h1>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <ThemeToggle />
-              <LanguageSwitcher />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowHistory(!showHistory)}
-                className="hover:bg-primary/10"
-              >
-                <History className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">History</span>
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleLogout} className="hover:bg-destructive/10">
-                <LogOut className="w-4 h-4" />
-              </Button>
-            </div>
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
+      {/* Hero Section */}
+      <header className="container mx-auto px-4 py-16 text-center">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex-1"></div>
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10">
+            <ChefHat className="w-8 h-8 text-primary" />
+          </div>
+          <div className="flex-1 flex justify-end gap-2">
+            <ThemeToggle />
+            <LanguageSwitcher />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowHistory(!showHistory)}
+            >
+              <History className="w-4 h-4 mr-2" />
+              Recipe History
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
           </div>
         </div>
+        <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+          AI Recipe Generator
+        </h1>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          Transform Food Photos into Delicious Recipes
+        </p>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6 pb-16">
-        <div className="max-w-4xl mx-auto space-y-4">
-          {/* Compact Upload Section */}
-          {!selectedImage && !recipe && (
-            <Card className="border border-border/50 backdrop-blur-sm bg-card/80 shadow-[var(--card-shadow)] hover:shadow-[var(--hover-shadow)] transition-all duration-300 overflow-hidden">
-              <CardContent className="p-6">
-                <div className="grid md:grid-cols-3 gap-4">
-                  {/* Upload */}
-                  <label htmlFor="image-upload" className="cursor-pointer group">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      id="image-upload"
-                    />
-                    <div className="h-full flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-border hover:border-primary bg-gradient-to-br from-primary/5 to-accent/5 transition-all group-hover:scale-105">
-                      <Upload className="w-8 h-8 text-primary mb-2" />
-                      <p className="text-sm font-medium text-center">Upload Image</p>
-                    </div>
-                  </label>
-                  
-                  {/* Camera */}
-                  <div 
-                    onClick={() => !isCameraActive && startCamera()}
-                    className="cursor-pointer group"
-                  >
-                    <div className="h-full flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-border hover:border-primary bg-gradient-to-br from-accent/5 to-primary/5 transition-all group-hover:scale-105">
-                      <Camera className="w-8 h-8 text-accent mb-2" />
-                      <p className="text-sm font-medium text-center">Take Photo</p>
-                    </div>
-                  </div>
-                  
-                  {/* Samples */}
-                  <div 
-                    onClick={() => {
-                      const samples = document.getElementById('samples-section');
-                      samples?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    className="cursor-pointer group"
-                  >
-                    <div className="h-full flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-border hover:border-primary bg-gradient-to-br from-secondary/30 to-muted/30 transition-all group-hover:scale-105">
-                      <Image className="w-8 h-8 text-muted-foreground mb-2" />
-                      <p className="text-sm font-medium text-center">Try Samples</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Selected Image Preview with Generate Button */}
-          {selectedImage && !recipe && (
-            <Card className="border border-primary/30 backdrop-blur-sm bg-card/90 shadow-[var(--hover-shadow)] animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <CardContent className="p-4">
-                <div className="flex flex-col sm:flex-row gap-4 items-center">
-                  <div className="relative group flex-shrink-0">
-                    <img
-                      src={selectedImage}
-                      alt="Selected food"
-                      className="w-full sm:w-32 h-32 object-cover rounded-xl shadow-md"
-                    />
-                    <label htmlFor="image-upload" className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center cursor-pointer">
-                      <p className="text-white text-xs font-medium">Change</p>
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      id="image-upload"
-                    />
-                  </div>
-                  <div className="flex-1 flex flex-col sm:flex-row items-center gap-3 w-full">
-                    <Button
-                      onClick={generateRecipe}
-                      disabled={isLoading}
-                      className="w-full sm:flex-1 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity shadow-lg"
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <ChefHat className="mr-2 h-5 w-5" />
-                          Generate Recipe
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      onClick={() => setSelectedImage(null)}
-                      variant="outline"
-                      className="w-full sm:w-auto"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Sample Food Images Section - Compact */}
-          {!recipe && (
-            <div id="samples-section">
-              <Card className="border border-border/50 backdrop-blur-sm bg-card/80 shadow-[var(--card-shadow)] hover:shadow-[var(--hover-shadow)] transition-all duration-300">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                      <Image className="w-4 h-4 text-primary" />
-                    </div>
-                    <h3 className="text-base font-semibold">Sample Images</h3>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {sampleImages.map((sample) => (
-                      <div
-                        key={sample.id}
-                        onClick={() => handleSampleImageSelect(sample.url)}
-                        className="cursor-pointer group relative overflow-hidden rounded-lg border border-border hover:border-primary transition-all duration-300 hover:scale-105"
-                      >
+      <main className="container mx-auto px-4 pb-16">
+        <div className="max-w-4xl mx-auto space-y-8">
+          {/* Upload Section */}
+          <Card className="border-2 border-dashed hover:border-primary/50 transition-all duration-300 shadow-lg">
+            <CardContent className="p-8">
+              <div className="text-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <label htmlFor="image-upload" className="cursor-pointer">
+                  <div className="flex flex-col items-center gap-4">
+                    {selectedImage ? (
+                      <div className="relative w-full max-w-md mx-auto">
                         <img
-                          src={sample.url}
-                          alt={sample.name}
-                          className="w-full h-24 sm:h-28 object-cover group-hover:scale-110 transition-transform duration-300"
+                          src={selectedImage}
+                          alt="Selected food"
+                          className="rounded-lg w-full h-auto object-cover shadow-md"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                          <p className="text-white font-medium text-xs">{sample.name}</p>
+                        <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                          <p className="text-white font-medium">Click to change image</p>
                         </div>
                       </div>
-                    ))}
+                    ) : (
+                      <>
+                        <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Upload className="w-12 h-12 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-lg font-semibold mb-1">Upload Food Image</p>
+                          <p className="text-sm text-muted-foreground">
+                            Click to upload an image
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+                </label>
+              </div>
 
-          {/* Camera Capture Section - Full Screen Modal Style */}
-          {isCameraActive && (
-            <Card className="fixed inset-4 z-40 border-2 border-primary/50 backdrop-blur-sm bg-card/95 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <CardContent className="p-4 h-full flex flex-col">
-                <div className="flex-1 flex flex-col">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                        <Camera className="w-4 h-4 text-primary" />
-                      </div>
-                      <h3 className="text-base font-semibold">Camera</h3>
-                    </div>
-                    <Button
-                      onClick={stopCamera}
-                      size="sm"
-                      variant="ghost"
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                  
-                  <div className="relative flex-1 rounded-xl overflow-hidden bg-black">
-                    <video
-                      id="camera-preview"
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full h-full object-cover"
-                    />
-                    <Button
-                      onClick={flipCamera}
-                      size="icon"
-                      className="absolute top-3 right-3 rounded-full backdrop-blur-md bg-background/50 hover:bg-background/70"
-                    >
-                      <SwitchCamera className="h-4 w-4" />
-                    </Button>
-                    <div className="absolute bottom-3 right-3 flex flex-col gap-2">
-                      <Button
-                        onClick={() => handleZoom('in')}
-                        size="icon"
-                        className="rounded-full backdrop-blur-md bg-background/50 hover:bg-background/70"
-                      >
-                        <ZoomIn className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        onClick={() => handleZoom('out')}
-                        size="icon"
-                        className="rounded-full backdrop-blur-md bg-background/50 hover:bg-background/70"
-                      >
-                        <ZoomOut className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4 flex justify-center">
-                    <Button
-                      onClick={capturePhoto}
-                      size="lg"
-                      className="bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity shadow-lg"
-                    >
-                      <Camera className="mr-2 h-5 w-5" />
-                      Capture Photo
-                    </Button>
-                  </div>
+              {selectedImage && (
+                <div className="mt-6 flex justify-center">
+                  <Button
+                    onClick={generateRecipe}
+                    disabled={isLoading}
+                    size="lg"
+                    className="bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Generating Recipe...
+                      </>
+                    ) : (
+                      <>
+                        <ChefHat className="mr-2 h-5 w-5" />
+                        Generate Recipe
+                      </>
+                    )}
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              )}
+            </CardContent>
+          </Card>
 
-          {/* Loading Skeleton - Compact */}
+          {/* Sample Food Images Section */}
+          <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg">
+            <CardContent className="p-8">
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+                  <Image className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Choose from Sample Images</h3>
+                <p className="text-sm text-muted-foreground">
+                  Try our AI with these sample food images
+                </p>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {sampleImages.map((sample) => (
+                  <div
+                    key={sample.id}
+                    onClick={() => handleSampleImageSelect(sample.url)}
+                    className="cursor-pointer group relative overflow-hidden rounded-lg border-2 border-border hover:border-primary transition-all duration-300"
+                  >
+                    <img
+                      src={sample.url}
+                      alt={sample.name}
+                      className="w-full h-32 object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <p className="text-white font-medium text-sm">{sample.name}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Camera Capture Section */}
+          <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg">
+            <CardContent className="p-8">
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+                  <Camera className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Capture with Camera</h3>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Take a photo of your food directly
+                </p>
+
+                {!isCameraActive ? (
+                  <Button
+                    onClick={() => startCamera()}
+                    size="lg"
+                    variant="outline"
+                    className="hover:bg-primary hover:text-primary-foreground transition-all"
+                  >
+                    <Camera className="mr-2 h-5 w-5" />
+                    Open Camera
+                  </Button>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="relative max-w-md mx-auto rounded-lg overflow-hidden bg-black">
+                      <video
+                        id="camera-preview"
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-auto min-h-[300px] bg-black"
+                        style={{ objectFit: 'cover' }}
+                      />
+                      <Button
+                        onClick={flipCamera}
+                        size="icon"
+                        variant="secondary"
+                        className="absolute top-4 right-4 rounded-full"
+                      >
+                        <SwitchCamera className="h-5 w-5" />
+                      </Button>
+                      <div className="absolute bottom-4 right-4 flex flex-col gap-2">
+                        <Button
+                          onClick={() => handleZoom('in')}
+                          size="icon"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          <ZoomIn className="h-5 w-5" />
+                        </Button>
+                        <Button
+                          onClick={() => handleZoom('out')}
+                          size="icon"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          <ZoomOut className="h-5 w-5" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex gap-3 justify-center">
+                      <Button
+                        onClick={capturePhoto}
+                        size="lg"
+                        className="bg-gradient-to-r from-primary to-accent"
+                      >
+                        <Camera className="mr-2 h-5 w-5" />
+                        Capture Photo
+                      </Button>
+                      <Button
+                        onClick={stopCamera}
+                        size="lg"
+                        variant="outline"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Loading Skeleton */}
           {isLoading && (
-            <Card className="backdrop-blur-sm bg-card/90 shadow-[var(--hover-shadow)] animate-in fade-in slide-in-from-bottom-4 duration-700 border border-primary/30">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="h-6 bg-gradient-to-r from-primary/20 to-accent/20 rounded-lg animate-pulse w-2/3"></div>
+            <Card className="shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <CardContent className="p-8">
+                <div className="space-y-6">
+                  {/* Title Skeleton */}
+                  <div className="h-8 bg-secondary/30 rounded animate-pulse w-2/3"></div>
                   
-                  <div className="bg-gradient-to-br from-secondary/20 to-muted/20 rounded-xl p-4">
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                  {/* Nutritional Values Skeleton */}
+                  <div className="bg-secondary/30 rounded-lg p-4">
+                    <div className="h-6 bg-secondary/50 rounded animate-pulse w-1/3 mb-3"></div>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                       {[1, 2, 3, 4, 5].map((i) => (
                         <div key={i} className="text-center space-y-2">
-                          <div className="h-3 bg-muted/50 rounded animate-pulse w-12 mx-auto"></div>
-                          <div className="h-5 bg-muted/50 rounded animate-pulse w-10 mx-auto"></div>
+                          <div className="h-4 bg-secondary/50 rounded animate-pulse w-16 mx-auto"></div>
+                          <div className="h-6 bg-secondary/50 rounded animate-pulse w-12 mx-auto"></div>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-primary/30 animate-pulse"></div>
-                        <div className="h-3 bg-muted/30 rounded animate-pulse flex-1"></div>
-                      </div>
-                    ))}
+                  {/* Ingredients Skeleton */}
+                  <div>
+                    <div className="h-6 bg-secondary/30 rounded animate-pulse w-1/4 mb-3"></div>
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-secondary/50 animate-pulse"></div>
+                          <div className="h-4 bg-secondary/30 rounded animate-pulse flex-1"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Instructions Skeleton */}
+                  <div>
+                    <div className="h-6 bg-secondary/30 rounded animate-pulse w-1/4 mb-3"></div>
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <div className="h-6 w-6 rounded-full bg-secondary/50 animate-pulse flex-shrink-0"></div>
+                          <div className="flex-1 space-y-2">
+                            <div className="h-4 bg-secondary/30 rounded animate-pulse"></div>
+                            <div className="h-4 bg-secondary/30 rounded animate-pulse w-5/6"></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Recipe Display - Modern & Compact */}
+          {/* Recipe Display */}
           {recipe && !isLoading && (
-            <Card className="backdrop-blur-sm bg-card/90 shadow-[var(--hover-shadow)] animate-in fade-in slide-in-from-bottom-4 duration-700 border border-primary/30 overflow-hidden">
-              <CardContent className="p-6">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-3">
-                  <div>
-                    <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">{recipe.title}</h2>
-                    <div className="flex items-center gap-4 text-sm">
-                      <div className="flex items-center gap-2 bg-gradient-to-r from-primary/10 to-accent/10 px-3 py-1 rounded-full">
-                        <span className="text-muted-foreground">Servings:</span>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setCurrentServings(Math.max(1, currentServings - 1))}
-                            disabled={currentServings <= 1}
-                            className="w-5 h-5 rounded-full bg-background hover:bg-primary hover:text-primary-foreground disabled:opacity-50 flex items-center justify-center text-xs font-bold transition-colors"
-                          >
-                            −
-                          </button>
-                          <span className="font-bold text-foreground w-6 text-center">{currentServings}</span>
-                          <button
-                            onClick={() => setCurrentServings(currentServings + 1)}
-                            className="w-5 h-5 rounded-full bg-background hover:bg-primary hover:text-primary-foreground flex items-center justify-center text-xs font-bold transition-colors"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 flex-wrap">
-                    <Button onClick={downloadIngredients} variant="outline" size="sm" className="text-xs">
-                      Ingredients
+            <Card className="shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <CardContent className="p-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+                  <h2 className="text-3xl font-bold text-primary">{recipe.title}</h2>
+                  <div className="flex gap-2">
+                    <Button onClick={downloadIngredients} variant="outline" size="sm">
+                      Download Ingredients
                     </Button>
-                    <Button onClick={downloadRecipe} variant="outline" size="sm" className="text-xs">
-                      Full Recipe
+                    <Button onClick={downloadRecipe} variant="outline" size="sm">
+                      Download Recipe
                     </Button>
                   </div>
                 </div>
 
-                <div className="space-y-5">
-                  {/* Nutritional Values - Compact */}
-                  <div className="bg-gradient-to-br from-secondary/20 to-muted/20 backdrop-blur-sm rounded-xl p-4 border border-border/50">
-                    <h3 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground">
-                      <span className="w-1.5 h-1.5 rounded-full bg-accent"></span>
-                      Nutrition (per serving)
+                {/* Serving Size Adjuster */}
+                <div className="bg-accent/10 rounded-lg p-4 mb-6">
+                  <div className="flex items-center justify-between max-w-xs mx-auto">
+                    <span className="text-sm font-medium text-muted-foreground">Servings:</span>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentServings(Math.max(1, currentServings - 1))}
+                        disabled={currentServings <= 1}
+                      >
+                        -
+                      </Button>
+                      <span className="text-lg font-bold w-12 text-center">{currentServings}</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentServings(currentServings + 1)}
+                      >
+                        +
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Nutritional Values */}
+                  <div className="bg-secondary/30 rounded-lg p-4">
+                    <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-accent"></span>
+                      Nutritional Values (per serving)
                     </h3>
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                      {[
-                        { label: "Calories", value: recipe.nutritionalValues.calories },
-                        { label: "Protein", value: recipe.nutritionalValues.protein },
-                        { label: "Carbs", value: recipe.nutritionalValues.carbs },
-                        { label: "Fat", value: recipe.nutritionalValues.fat },
-                        { label: "Fiber", value: recipe.nutritionalValues.fiber }
-                      ].map((item, i) => (
-                        <div key={i} className="text-center">
-                          <p className="text-xs text-muted-foreground mb-1">{item.label}</p>
-                          <p className="text-sm font-bold text-foreground">{item.value}</p>
-                        </div>
-                      ))}
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Calories</p>
+                        <p className="text-lg font-semibold">{recipe.nutritionalValues.calories}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Protein</p>
+                        <p className="text-lg font-semibold">{recipe.nutritionalValues.protein}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Carbs</p>
+                        <p className="text-lg font-semibold">{recipe.nutritionalValues.carbs}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Fat</p>
+                        <p className="text-lg font-semibold">{recipe.nutritionalValues.fat}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Fiber</p>
+                        <p className="text-lg font-semibold">{recipe.nutritionalValues.fiber}</p>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Ingredients - Compact */}
+                  {/* Ingredients */}
                   <div>
-                    <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-primary"></span>
                       Ingredients
                     </h3>
-                    <ul className="space-y-2">
+                    <ul className="space-y-3 ml-4">
                       {recipe.ingredients.map((ingredient, index) => (
-                        <li key={index} className="text-sm">
-                          <div className="flex items-start gap-2 group hover:bg-muted/30 -mx-2 px-2 py-1 rounded-lg transition-colors">
-                            <span className="text-primary mt-0.5 text-xs">•</span>
-                            <div className="flex-1">
-                              <span className="text-foreground">{scaleIngredient(ingredient)}</span>
-                              {recipe.substitutes && recipe.substitutes[ingredient] && (
-                                <div className="text-xs text-muted-foreground mt-0.5">
-                                  <span className="italic">Alt: {recipe.substitutes[ingredient].join(", ")}</span>
-                                </div>
-                              )}
-                            </div>
+                        <li key={index} className="flex flex-col gap-1">
+                          <div className="flex items-start gap-2">
+                            <span className="text-primary mt-1">•</span>
+                            <span className="text-foreground">{scaleIngredient(ingredient)}</span>
                           </div>
+                          {recipe.substitutes && recipe.substitutes[ingredient] && (
+                            <div className="ml-5 text-sm text-muted-foreground">
+                              <span className="italic">Substitutes: {recipe.substitutes[ingredient].join(", ")}</span>
+                            </div>
+                          )}
                         </li>
                       ))}
                     </ul>
                   </div>
 
-                  {/* Instructions - Compact */}
+                  {/* Instructions */}
                   <div>
-                    <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                    <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-accent"></span>
                       Instructions
                     </h3>
-                    <ol className="space-y-3">
+                    <ol className="space-y-3 ml-4">
                       {recipe.instructions.map((instruction, index) => (
-                        <li key={index} className="flex items-start gap-3 text-sm group hover:bg-muted/30 -mx-2 px-2 py-2 rounded-lg transition-colors">
-                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-accent to-primary text-accent-foreground flex items-center justify-center text-xs font-bold shadow-sm">
+                        <li key={index} className="flex items-start gap-3">
+                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-sm font-semibold">
                             {index + 1}
                           </span>
-                          <span className="text-foreground pt-0.5 leading-relaxed">{instruction}</span>
+                          <span className="text-foreground pt-0.5">{instruction}</span>
                         </li>
                       ))}
                     </ol>
                   </div>
                 </div>
 
-                <div className="mt-6 pt-5 border-t border-border/50">
+                <div className="mt-8 pt-6 border-t">
                   <Button
                     variant="outline"
                     onClick={() => {
                       setSelectedImage(null);
                       setRecipe(null);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="w-full hover:bg-primary hover:text-primary-foreground transition-colors"
+                    className="w-full sm:w-auto"
                   >
                     Generate Another Recipe
                   </Button>
@@ -826,61 +830,51 @@ const Index = () => {
             </Card>
           )}
 
-          {/* Recipe History - Compact Modal */}
+          {/* Recipe History */}
           {showHistory && savedRecipes.length > 0 && (
-            <Card className="backdrop-blur-sm bg-card/95 shadow-[var(--hover-shadow)] animate-in fade-in slide-in-from-bottom-4 duration-500 border border-primary/30">
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Recipe History</h2>
-                  <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)}>
-                    Close
-                  </Button>
-                </div>
-                <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+            <Card className="shadow-xl">
+              <CardContent className="p-8">
+                <h2 className="text-3xl font-bold text-primary mb-6">Your Saved Recipes</h2>
+                <div className="grid gap-4">
                   {savedRecipes.map((savedRecipe) => (
                     <Card
                       key={savedRecipe.id}
-                      className="hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group"
+                      className="hover:shadow-md transition-shadow cursor-pointer"
                     >
-                      <CardContent className="p-3">
-                        <div className="flex items-start gap-3">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-4">
                           {savedRecipe.image_url && (
                             <img
                               src={savedRecipe.image_url}
                               alt={savedRecipe.title}
-                              className="w-16 h-16 rounded-lg object-cover group-hover:scale-105 transition-transform"
+                              className="w-24 h-24 rounded-lg object-cover"
                             />
                           )}
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-base font-semibold mb-1 truncate">{savedRecipe.title}</h3>
-                            <p className="text-xs text-muted-foreground mb-1">
-                              {savedRecipe.ingredients.length} items • {savedRecipe.instructions.length} steps
+                          <div className="flex-1">
+                            <h3 className="text-xl font-semibold mb-2">{savedRecipe.title}</h3>
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {savedRecipe.ingredients.length} ingredients • {savedRecipe.instructions.length} steps • Servings: {savedRecipe.servingSize}
                             </p>
                             {savedRecipe.created_at && (
                               <p className="text-xs text-muted-foreground">
-                                {new Date(savedRecipe.created_at).toLocaleDateString()}
+                                Created {new Date(savedRecipe.created_at).toLocaleDateString()}
                               </p>
                             )}
                           </div>
-                          <div className="flex flex-col gap-1">
+                          <div className="flex gap-2">
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => loadSavedRecipe(savedRecipe)}
-                              className="text-xs h-7"
                             >
                               View
                             </Button>
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                savedRecipe.id && deleteRecipe(savedRecipe.id);
-                              }}
-                              className="text-xs h-7 hover:bg-destructive/10 hover:text-destructive"
+                              onClick={() => savedRecipe.id && deleteRecipe(savedRecipe.id)}
                             >
-                              <Trash2 className="w-3 h-3" />
+                              <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
                         </div>
