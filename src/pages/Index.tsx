@@ -749,6 +749,67 @@ const Index = () => {
                   </div>
                 </div>
 
+                {/* Ingredient Detection on Image */}
+                {selectedImage && (
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-lg md:text-xl font-semibold flex items-center gap-2">
+                        <Search className="w-5 h-5 text-primary" />
+                        Ingredient Detection
+                      </h3>
+                      <Button
+                        onClick={analyzeIngredients}
+                        disabled={isAnalyzing}
+                        size="sm"
+                        variant="outline"
+                        className="transition-all hover:bg-primary hover:text-white"
+                      >
+                        {isAnalyzing ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Analyzing...
+                          </>
+                        ) : ingredientLabels.length > 0 ? (
+                          "Re-analyze"
+                        ) : (
+                          "Detect Ingredients"
+                        )}
+                      </Button>
+                    </div>
+                    <div className="relative inline-block w-full max-w-lg mx-auto rounded-xl overflow-hidden border-2 border-primary/20 shadow-lg">
+                      <img
+                        src={selectedImage}
+                        alt="Analyzed dish"
+                        className="w-full h-auto block"
+                      />
+                      {ingredientLabels.map((label, index) => (
+                        <div
+                          key={index}
+                          className="absolute"
+                          style={{ left: `${label.x}%`, top: `${label.y}%`, transform: 'translate(-50%, -50%)' }}
+                        >
+                          {/* Dot */}
+                          <div className="w-3 h-3 rounded-full bg-primary border-2 border-white shadow-lg" />
+                          {/* Label */}
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2 whitespace-nowrap bg-primary/90 text-primary-foreground text-xs font-semibold px-2 py-1 rounded-md shadow-lg backdrop-blur-sm">
+                            {label.name}
+                            {/* Arrow */}
+                            <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-r-[6px] border-r-primary/90" />
+                          </div>
+                        </div>
+                      ))}
+                      {isAnalyzing && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl">
+                          <div className="flex flex-col items-center gap-2 text-white">
+                            <Loader2 className="w-8 h-8 animate-spin" />
+                            <span className="text-sm font-medium">Detecting ingredients...</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Serving Size Adjuster */}
                 <div className="bg-gradient-to-r from-accent/10 via-primary/10 to-accent/10 rounded-xl p-4 md:p-6 mb-6 border border-primary/20 shadow-lg">
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-md mx-auto">
