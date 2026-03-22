@@ -46,10 +46,10 @@ const Index = () => {
   const { i18n } = useTranslation();
 
   const sampleImages = [
-    { id: 1, url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400", name: "Salad" },
-    { id: 2, url: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400", name: "Pizza" },
-    { id: 3, url: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400", name: "Pancakes" },
-    { id: 4, url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400", name: "Asian Cuisine" },
+    { id: 1, url: "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=400", name: "Butter Chicken" },
+    { id: 2, url: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400", name: "Biryani" },
+    { id: 3, url: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400", name: "Samosa" },
+    { id: 4, url: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=400", name: "Masala Dosa" },
   ];
 
   useEffect(() => {
