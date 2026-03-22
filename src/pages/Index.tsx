@@ -755,30 +755,10 @@ const Index = () => {
                 {/* Ingredient Detection on Image */}
                 {selectedImage && (
                   <div className="mb-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-lg md:text-xl font-semibold flex items-center gap-2">
-                        <Search className="w-5 h-5 text-primary" />
-                        Ingredient Detection
-                      </h3>
-                      <Button
-                        onClick={analyzeIngredients}
-                        disabled={isAnalyzing}
-                        size="sm"
-                        variant="outline"
-                        className="transition-all hover:bg-primary hover:text-white"
-                      >
-                        {isAnalyzing ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Analyzing...
-                          </>
-                        ) : ingredientLabels.length > 0 ? (
-                          "Re-analyze"
-                        ) : (
-                          "Detect Ingredients"
-                        )}
-                      </Button>
-                    </div>
+                    <h3 className="text-lg md:text-xl font-semibold flex items-center gap-2 mb-3">
+                      <Search className="w-5 h-5 text-primary" />
+                      Ingredient Detection
+                    </h3>
                     <div className="relative inline-block w-full max-w-lg mx-auto rounded-xl overflow-hidden border-2 border-primary/20 shadow-lg">
                       <img
                         src={selectedImage}
