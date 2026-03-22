@@ -136,7 +136,7 @@ serve(async (req) => {
               content: [
                 {
                   type: "text",
-                  text: `Please analyze this food image and generate a complete recipe with: 1) A title, 2) Serving size (number of servings), 3) List of ingredients with measurements, 4) Step-by-step cooking instructions, 5) Possible substitute ingredients for each main ingredient (at least 1-2 alternatives when applicable), 6) Estimated nutritional values per serving (calories, protein, carbs, fat, fiber). IMPORTANT: Generate the ingredients and instructions in ${language === "en" ? "English" : language === "hi" ? "Hindi" : language === "ta" ? "Tamil" : language === "te" ? "Telugu" : language === "bn" ? "Bengali" : language === "mr" ? "Marathi" : "English"} language. Return only valid JSON.`,
+                  text: `Please analyze this food image and generate a complete recipe with: 1) A title, 2) Serving size (number of servings), 3) A health rating from 1 to 5 (1=very unhealthy, 5=very healthy), 4) List of ingredients with measurements, 5) Step-by-step cooking instructions, 6) Possible substitute ingredients for each main ingredient (at least 1-2 alternatives when applicable), 7) Estimated nutritional values per serving (calories, protein, carbs, fat, fiber). IMPORTANT: Generate the ingredients and instructions in ${language === "en" ? "English" : language === "hi" ? "Hindi" : language === "ta" ? "Tamil" : language === "te" ? "Telugu" : language === "bn" ? "Bengali" : language === "mr" ? "Marathi" : "English"} language. Return only valid JSON.`,
                 },
                 {
                   type: "image_url",
