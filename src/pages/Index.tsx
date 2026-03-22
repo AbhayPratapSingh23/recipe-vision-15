@@ -960,11 +960,11 @@ const Index = () => {
                     <p className="text-sm text-muted-foreground mb-4">Order ingredients from your favorite quick commerce platform</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                       {[
-                        { name: "Blinkit", url: "https://blinkit.com/s/?q=", color: "bg-yellow-500" },
-                        { name: "Zepto", url: "https://www.zeptonow.com/search?query=", color: "bg-purple-500" },
-                        { name: "Swiggy Instamart", url: "https://www.swiggy.com/instamart/search?query=", color: "bg-orange-500" },
-                        { name: "BigBasket", url: "https://www.bigbasket.com/ps/?q=", color: "bg-green-600" },
-                        { name: "JioMart", url: "https://www.jiomart.com/search/", color: "bg-blue-600" },
+                        { name: "Blinkit", url: "https://blinkit.com/s/?q=", logo: "https://cdn.grofers.com/layout-engine/2021-07/Blinkit_Press_Icon.png" },
+                        { name: "Zepto", url: "https://www.zeptonow.com/search?query=", logo: "https://play-lh.googleusercontent.com/sREKCRvWxXjKlFGBnkur6nScIRSYYOkMpGP2JUyf5KB-JcHCzFqFE_DKmqxkJBVPJoc" },
+                        { name: "Swiggy Instamart", url: "https://www.swiggy.com/instamart/search?query=", logo: "https://play-lh.googleusercontent.com/XHGOBbczxn0AXQK1pDnYFfcnBFKgh95SHqmPH0MNaLJaJC3EK1Bv84cKh3K3it4kBA" },
+                        { name: "BigBasket", url: "https://www.bigbasket.com/ps/?q=", logo: "https://play-lh.googleusercontent.com/Is_i3A0WGsK8-_bbjSHiQuLxJDnwGEkk2WMPguVVMI93D4YiXHr70XE7p5RLhOqdIQ" },
+                        { name: "JioMart", url: "https://www.jiomart.com/search/", logo: "https://play-lh.googleusercontent.com/nelH5jkff2wcGXVJHx3FI4GslPB-2MFrJDRIH0eNCMAmh8M06SCJseJPyQLmmxFbFA" },
                       ].map((platform) => (
                         <a
                           key={platform.name}
@@ -973,7 +973,17 @@ const Index = () => {
                           rel="noopener noreferrer"
                           className="flex flex-col items-center gap-2 p-3 rounded-lg bg-card/50 border border-border hover:border-primary hover:shadow-md transition-all group"
                         >
-                          <div className={`w-10 h-10 rounded-full ${platform.color} flex items-center justify-center text-white font-bold text-sm shadow-md group-hover:scale-110 transition-transform`}>
+                          <img
+                            src={platform.logo}
+                            alt={platform.name}
+                            className="w-10 h-10 rounded-full object-cover shadow-md group-hover:scale-110 transition-transform"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              target.nextElementSibling?.classList.remove('hidden');
+                            }}
+                          />
+                          <div className="hidden w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
                             {platform.name.charAt(0)}
                           </div>
                           <span className="text-xs md:text-sm font-medium text-center">{platform.name}</span>
