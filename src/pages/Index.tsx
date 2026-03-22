@@ -10,6 +10,12 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
 
+interface IngredientLabel {
+  name: string;
+  x: number;
+  y: number;
+}
+
 interface Recipe {
   id?: string;
   title: string;
