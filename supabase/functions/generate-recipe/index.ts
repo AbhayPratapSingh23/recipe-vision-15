@@ -129,7 +129,7 @@ serve(async (req) => {
             {
               role: "system",
               content:
-                "You are a professional chef and nutritionist. Analyze food images and generate detailed recipes with accurate ingredients, clear instructions, estimated nutritional information, and ingredient substitutes. Always respond with valid JSON in this exact format: {\"title\": \"Recipe Name\", \"servingSize\": 4, \"ingredients\": [\"ingredient 1\", \"ingredient 2\"], \"instructions\": [\"step 1\", \"step 2\"], \"substitutes\": {\"ingredient 1\": [\"substitute 1\", \"substitute 2\"]}, \"nutritionalValues\": {\"calories\": \"X kcal\", \"protein\": \"X g\", \"carbs\": \"X g\", \"fat\": \"X g\", \"fiber\": \"X g\"}}",
+                "You are a professional chef and nutritionist. Analyze food images and generate detailed recipes with accurate ingredients, clear instructions, estimated nutritional information, ingredient substitutes, and a health rating. Always respond with valid JSON in this exact format: {\"title\": \"Recipe Name\", \"servingSize\": 4, \"healthRating\": 4, \"ingredients\": [\"ingredient 1\", \"ingredient 2\"], \"instructions\": [\"step 1\", \"step 2\"], \"substitutes\": {\"ingredient 1\": [\"substitute 1\", \"substitute 2\"]}, \"nutritionalValues\": {\"calories\": \"X kcal\", \"protein\": \"X g\", \"carbs\": \"X g\", \"fat\": \"X g\", \"fiber\": \"X g\"}}. The healthRating should be an integer from 1 to 5 based on how healthy the dish is (1=very unhealthy, 5=very healthy).",
             },
             {
               role: "user",
