@@ -226,7 +226,7 @@ const Index = () => {
   const handleSampleImageSelect = (imageUrl: string) => {
     setSelectedImage(imageUrl);
     setRecipe(null);
-    toast({
+    setIngredientLabels([]);
       title: "Sample image selected",
       description: "Click Generate Recipe to continue",
     });
