@@ -411,6 +411,7 @@ const Index = () => {
     } finally {
       setIsAnalyzing(false);
     }
+  };
 
   const scaleIngredient = (ingredient: string): string => {
     if (!recipe) return ingredient;
