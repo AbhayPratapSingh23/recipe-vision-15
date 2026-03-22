@@ -912,7 +912,6 @@ const Index = () => {
                       </div>
                     </TabsContent>
                   </Tabs>
-                  </div>
                   {/* YouTube Video */}
                   <div className="bg-gradient-to-br from-destructive/10 to-destructive/5 rounded-xl p-4 md:p-6 border border-destructive/20 shadow-lg">
                     <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
