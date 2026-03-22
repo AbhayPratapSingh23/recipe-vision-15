@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, SwitchCamera, ZoomIn, ZoomOut, ExternalLink, ShoppingCart, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
@@ -871,44 +872,46 @@ const Index = () => {
                     </div>
                   </div>
 
-                  {/* Ingredients */}
-                  <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-4 md:p-6 border border-primary/20 shadow-lg">
-                    <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
-                      Ingredients
-                    </h3>
-                    <ul className="space-y-3">
-                      {recipe.ingredients.map((ingredient, index) => (
-                        <li key={index} className="flex flex-col gap-1 p-2 rounded-lg hover:bg-card/50 transition-all">
-                          <div className="flex items-start gap-3">
-                            <span className="text-primary text-lg mt-0.5">•</span>
-                            <span className="text-foreground text-sm md:text-base">{scaleIngredient(ingredient)}</span>
-                          </div>
-                          {recipe.substitutes && recipe.substitutes[ingredient] && (
-                            <div className="ml-7 text-xs md:text-sm text-muted-foreground bg-muted/30 p-2 rounded">
-                              <span className="italic">Substitutes: {recipe.substitutes[ingredient].join(", ")}</span>
-                            </div>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Instructions */}
-                  <div className="bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl p-4 md:p-6 border border-accent/20 shadow-lg">
-                    <h3 className="text-lg md:text-xl font-semibold mb-4">
-                      Instructions
-                    </h3>
-                    <ol className="space-y-4">
-                      {recipe.instructions.map((instruction, index) => (
-                        <li key={index} className="flex items-start gap-3 md:gap-4 p-3 rounded-lg hover:bg-card/50 transition-all">
-                          <span className="flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-full bg-gradient-to-br from-accent to-accent-glow text-white flex items-center justify-center text-sm md:text-base font-bold shadow-lg">
-                            {index + 1}
-                          </span>
-                          <span className="text-foreground pt-1 text-sm md:text-base">{instruction}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
+                  {/* Ingredients & Instructions Tabs */}
+                  <Tabs defaultValue="ingredients" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="ingredients">Ingredients ({recipe.ingredients.length})</TabsTrigger>
+                      <TabsTrigger value="instructions">Instructions ({recipe.instructions.length})</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="ingredients" className="mt-3">
+                      <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-3 md:p-4 border border-primary/20 max-h-72 overflow-y-auto">
+                        <ul className="space-y-1">
+                          {recipe.ingredients.map((ingredient, index) => (
+                            <li key={index} className="flex flex-col gap-0.5 p-1.5 rounded hover:bg-card/50 transition-all">
+                              <div className="flex items-start gap-2">
+                                <span className="text-primary text-sm mt-0.5">•</span>
+                                <span className="text-foreground text-sm">{scaleIngredient(ingredient)}</span>
+                              </div>
+                              {recipe.substitutes && recipe.substitutes[ingredient] && (
+                                <div className="ml-5 text-xs text-muted-foreground bg-muted/30 px-2 py-1 rounded">
+                                  <span className="italic">Alt: {recipe.substitutes[ingredient].join(", ")}</span>
+                                </div>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="instructions" className="mt-3">
+                      <div className="bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl p-3 md:p-4 border border-accent/20 max-h-72 overflow-y-auto">
+                        <ol className="space-y-2">
+                          {recipe.instructions.map((instruction, index) => (
+                            <li key={index} className="flex items-start gap-2 p-1.5 rounded hover:bg-card/50 transition-all">
+                              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-accent to-accent-glow text-white flex items-center justify-center text-xs font-bold shadow">
+                                {index + 1}
+                              </span>
+                              <span className="text-foreground text-sm pt-0.5">{instruction}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                   {/* YouTube Video */}
                   <div className="bg-gradient-to-br from-destructive/10 to-destructive/5 rounded-xl p-4 md:p-6 border border-destructive/20 shadow-lg">
                     <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
