@@ -17,6 +17,7 @@ interface Recipe {
   instructions: string[];
   servingSize: number;
   substitutes?: Record<string, string[]>;
+  healthRating?: number;
   nutritionalValues: {
     calories: string;
     protein: string;
