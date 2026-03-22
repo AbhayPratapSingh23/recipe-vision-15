@@ -389,6 +389,29 @@ const Index = () => {
     }
   };
 
+  const analyzeIngredients = async () => {
+    if (!selectedImage) return;
+    setIsAnalyzing(true);
+    setIngredientLabels([]);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-ingredients", {
+        body: { image: selectedImage },
+      });
+      if (error) throw error;
+      if (data?.labels) {
+        setIngredientLabels(data.labels);
+      }
+    } catch (error) {
+      console.error("Error analyzing ingredients:", error);
+      toast({
+        title: "Analysis failed",
+        description: "Could not detect ingredients in the image",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+
   const scaleIngredient = (ingredient: string): string => {
     if (!recipe) return ingredient;
     const scale = currentServings / recipe.servingSize;
