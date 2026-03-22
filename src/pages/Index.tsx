@@ -814,25 +814,25 @@ const Index = () => {
                     <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
                       Watch Recipe Video
                     </h3>
-                    <div className="aspect-video rounded-lg overflow-hidden bg-card/50 border border-border">
-                      <iframe
-                        className="w-full h-full"
-                        src={`https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(recipe.title + ' recipe')}`}
-                        title={`${recipe.title} recipe video`}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    </div>
-                    <div className="mt-3 flex justify-center">
-                      <a
-                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(recipe.title + ' recipe')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-sm text-destructive hover:underline font-medium"
-                      >
-                        Search more videos on YouTube <ExternalLink className="w-4 h-4" />
-                      </a>
-                    </div>
+                    <a
+                      href={`https://www.youtube.com/results?search_query=${encodeURIComponent(recipe.title + ' recipe')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-4 p-4 rounded-lg bg-card/50 border border-border hover:border-destructive hover:shadow-md transition-all group"
+                    >
+                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-destructive flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-md">
+                        <svg viewBox="0 0 24 24" className="w-8 h-8 md:w-10 md:h-10 text-white fill-current">
+                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-base md:text-lg text-foreground group-hover:text-destructive transition-colors">
+                          {recipe.title} - Recipe Video
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">Watch step-by-step cooking tutorials on YouTube</p>
+                      </div>
+                      <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-destructive flex-shrink-0 transition-colors" />
+                    </a>
                   </div>
 
                   {/* Quick Commerce - Buy Ingredients */}
