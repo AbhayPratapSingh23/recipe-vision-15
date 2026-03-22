@@ -960,11 +960,11 @@ const Index = () => {
                     <p className="text-sm text-muted-foreground mb-4">Order ingredients from your favorite quick commerce platform</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                       {[
-                        { name: "Blinkit", url: "https://blinkit.com/s/?q=", logo: "https://cdn.grofers.com/layout-engine/2021-07/Blinkit_Press_Icon.png" },
-                        { name: "Zepto", url: "https://www.zeptonow.com/search?query=", logo: "https://play-lh.googleusercontent.com/sREKCRvWxXjKlFGBnkur6nScIRSYYOkMpGP2JUyf5KB-JcHCzFqFE_DKmqxkJBVPJoc" },
-                        { name: "Swiggy Instamart", url: "https://www.swiggy.com/instamart/search?query=", logo: "https://play-lh.googleusercontent.com/XHGOBbczxn0AXQK1pDnYFfcnBFKgh95SHqmPH0MNaLJaJC3EK1Bv84cKh3K3it4kBA" },
-                        { name: "BigBasket", url: "https://www.bigbasket.com/ps/?q=", logo: "https://play-lh.googleusercontent.com/Is_i3A0WGsK8-_bbjSHiQuLxJDnwGEkk2WMPguVVMI93D4YiXHr70XE7p5RLhOqdIQ" },
-                        { name: "JioMart", url: "https://www.jiomart.com/search/", logo: "https://play-lh.googleusercontent.com/nelH5jkff2wcGXVJHx3FI4GslPB-2MFrJDRIH0eNCMAmh8M06SCJseJPyQLmmxFbFA" },
+                        { name: "Blinkit", url: "https://blinkit.com/s/?q=", logo: "https://www.google.com/s2/favicons?domain=blinkit.com&sz=64" },
+                        { name: "Zepto", url: "https://www.zeptonow.com/search?query=", logo: "https://www.google.com/s2/favicons?domain=zeptonow.com&sz=64" },
+                        { name: "Swiggy", url: "https://www.swiggy.com/instamart/search?query=", logo: "https://www.google.com/s2/favicons?domain=swiggy.com&sz=64" },
+                        { name: "BigBasket", url: "https://www.bigbasket.com/ps/?q=", logo: "https://www.google.com/s2/favicons?domain=bigbasket.com&sz=64" },
+                        { name: "JioMart", url: "https://www.jiomart.com/search/", logo: "https://www.google.com/s2/favicons?domain=jiomart.com&sz=64" },
                       ].map((platform) => (
                         <a
                           key={platform.name}
