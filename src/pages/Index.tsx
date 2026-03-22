@@ -17,6 +17,7 @@ interface Recipe {
   instructions: string[];
   servingSize: number;
   substitutes?: Record<string, string[]>;
+  healthRating?: number;
   nutritionalValues: {
     calories: string;
     protein: string;
@@ -45,10 +46,10 @@ const Index = () => {
   const { i18n } = useTranslation();
 
   const sampleImages = [
-    { id: 1, url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400", name: "Salad" },
-    { id: 2, url: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400", name: "Pizza" },
-    { id: 3, url: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400", name: "Pancakes" },
-    { id: 4, url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400", name: "Asian Cuisine" },
+    { id: 1, url: "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=400", name: "Butter Chicken" },
+    { id: 2, url: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400", name: "Biryani" },
+    { id: 3, url: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400", name: "Samosa" },
+    { id: 4, url: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=400", name: "Masala Dosa" },
   ];
 
   useEffect(() => {
@@ -742,6 +743,27 @@ const Index = () => {
                 </div>
 
                 <div className="space-y-6">
+                  {/* Health Rating */}
+                  {recipe.healthRating !== undefined && recipe.healthRating > 0 && (
+                    <div className="bg-gradient-to-br from-success/10 to-primary/5 rounded-xl p-4 md:p-6 border border-success/20 shadow-lg">
+                      <h3 className="text-lg md:text-xl font-semibold mb-3">Health Rating</h3>
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <svg
+                              key={star}
+                              className={`w-7 h-7 md:w-8 md:h-8 ${star <= recipe.healthRating! ? 'text-warning fill-warning' : 'text-muted-foreground/30 fill-muted-foreground/30'}`}
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                          ))}
+                        </div>
+                        <span className="text-xl md:text-2xl font-bold text-warning">{recipe.healthRating}/5</span>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Nutritional Values */}
                   <div className="bg-gradient-to-br from-success/10 to-success/5 rounded-xl p-4 md:p-6 border border-success/20 shadow-lg">
                     <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
