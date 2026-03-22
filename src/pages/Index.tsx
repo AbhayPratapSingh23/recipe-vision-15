@@ -809,6 +809,63 @@ const Index = () => {
                       ))}
                     </ol>
                   </div>
+                  {/* YouTube Video */}
+                  <div className="bg-gradient-to-br from-destructive/10 to-destructive/5 rounded-xl p-4 md:p-6 border border-destructive/20 shadow-lg">
+                    <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
+                      Watch Recipe Video
+                    </h3>
+                    <div className="aspect-video rounded-lg overflow-hidden bg-card/50 border border-border">
+                      <iframe
+                        className="w-full h-full"
+                        src={`https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(recipe.title + ' recipe')}`}
+                        title={`${recipe.title} recipe video`}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    <div className="mt-3 flex justify-center">
+                      <a
+                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(recipe.title + ' recipe')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm text-destructive hover:underline font-medium"
+                      >
+                        Search more videos on YouTube <ExternalLink className="w-4 h-4" />
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Quick Commerce - Buy Ingredients */}
+                  <div className="bg-gradient-to-br from-warning/10 to-warning/5 rounded-xl p-4 md:p-6 border border-warning/20 shadow-lg">
+                    <h3 className="text-lg md:text-xl font-semibold mb-2 flex items-center gap-2">
+                      <ShoppingCart className="w-5 h-5 text-warning" />
+                      Buy Ingredients
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">Order ingredients from your favorite quick commerce platform</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                      {[
+                        { name: "Blinkit", url: "https://blinkit.com/s/?q=", color: "bg-yellow-500" },
+                        { name: "Zepto", url: "https://www.zeptonow.com/search?query=", color: "bg-purple-500" },
+                        { name: "Swiggy Instamart", url: "https://www.swiggy.com/instamart/search?query=", color: "bg-orange-500" },
+                        { name: "BigBasket", url: "https://www.bigbasket.com/ps/?q=", color: "bg-green-600" },
+                        { name: "JioMart", url: "https://www.jiomart.com/search/", color: "bg-blue-600" },
+                      ].map((platform) => (
+                        <a
+                          key={platform.name}
+                          href={`${platform.url}${encodeURIComponent(recipe.title + ' ingredients')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex flex-col items-center gap-2 p-3 rounded-lg bg-card/50 border border-border hover:border-primary hover:shadow-md transition-all group"
+                        >
+                          <div className={`w-10 h-10 rounded-full ${platform.color} flex items-center justify-center text-white font-bold text-sm shadow-md group-hover:scale-110 transition-transform`}>
+                            {platform.name.charAt(0)}
+                          </div>
+                          <span className="text-xs md:text-sm font-medium text-center">{platform.name}</span>
+                          <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="mt-8 pt-6 border-t border-primary/20">
