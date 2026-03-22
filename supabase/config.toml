@@ -2,3 +2,6 @@ project_id = "oqmptlorzcbfjmamrqiq"
 
 [functions.generate-recipe]
 verify_jwt = false
+
+[functions.analyze-ingredients]
+verify_jwt = false

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, SwitchCamera, ZoomIn, ZoomOut, ExternalLink, ShoppingCart } from "lucide-react";
+import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, SwitchCamera, ZoomIn, ZoomOut, ExternalLink, ShoppingCart, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -9,6 +9,12 @@ import type { User } from "@supabase/supabase-js";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
+
+interface IngredientLabel {
+  name: string;
+  x: number;
+  y: number;
+}
 
 interface Recipe {
   id?: string;
@@ -41,6 +47,8 @@ const Index = () => {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
   const [zoom, setZoom] = useState<number>(1);
+  const [ingredientLabels, setIngredientLabels] = useState<IngredientLabel[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { i18n } = useTranslation();
@@ -207,8 +215,9 @@ const Index = () => {
 
       const reader = new FileReader();
       reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string);
+      setSelectedImage(e.target?.result as string);
         setRecipe(null);
+        setIngredientLabels([]);
       };
       reader.readAsDataURL(file);
     }
@@ -217,6 +226,7 @@ const Index = () => {
   const handleSampleImageSelect = (imageUrl: string) => {
     setSelectedImage(imageUrl);
     setRecipe(null);
+    setIngredientLabels([]);
     toast({
       title: "Sample image selected",
       description: "Click Generate Recipe to continue",
@@ -378,6 +388,30 @@ const Index = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const analyzeIngredients = async () => {
+    if (!selectedImage) return;
+    setIsAnalyzing(true);
+    setIngredientLabels([]);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-ingredients", {
+        body: { image: selectedImage },
+      });
+      if (error) throw error;
+      if (data?.labels) {
+        setIngredientLabels(data.labels);
+      }
+    } catch (error) {
+      console.error("Error analyzing ingredients:", error);
+      toast({
+        title: "Analysis failed",
+        description: "Could not detect ingredients in the image",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -714,6 +748,67 @@ const Index = () => {
                     </Button>
                   </div>
                 </div>
+
+                {/* Ingredient Detection on Image */}
+                {selectedImage && (
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-lg md:text-xl font-semibold flex items-center gap-2">
+                        <Search className="w-5 h-5 text-primary" />
+                        Ingredient Detection
+                      </h3>
+                      <Button
+                        onClick={analyzeIngredients}
+                        disabled={isAnalyzing}
+                        size="sm"
+                        variant="outline"
+                        className="transition-all hover:bg-primary hover:text-white"
+                      >
+                        {isAnalyzing ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Analyzing...
+                          </>
+                        ) : ingredientLabels.length > 0 ? (
+                          "Re-analyze"
+                        ) : (
+                          "Detect Ingredients"
+                        )}
+                      </Button>
+                    </div>
+                    <div className="relative inline-block w-full max-w-lg mx-auto rounded-xl overflow-hidden border-2 border-primary/20 shadow-lg">
+                      <img
+                        src={selectedImage}
+                        alt="Analyzed dish"
+                        className="w-full h-auto block"
+                      />
+                      {ingredientLabels.map((label, index) => (
+                        <div
+                          key={index}
+                          className="absolute"
+                          style={{ left: `${label.x}%`, top: `${label.y}%`, transform: 'translate(-50%, -50%)' }}
+                        >
+                          {/* Dot */}
+                          <div className="w-3 h-3 rounded-full bg-primary border-2 border-white shadow-lg" />
+                          {/* Label */}
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2 whitespace-nowrap bg-primary/90 text-primary-foreground text-xs font-semibold px-2 py-1 rounded-md shadow-lg backdrop-blur-sm">
+                            {label.name}
+                            {/* Arrow */}
+                            <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-r-[6px] border-r-primary/90" />
+                          </div>
+                        </div>
+                      ))}
+                      {isAnalyzing && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl">
+                          <div className="flex flex-col items-center gap-2 text-white">
+                            <Loader2 className="w-8 h-8 animate-spin" />
+                            <span className="text-sm font-medium">Detecting ingredients...</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Serving Size Adjuster */}
                 <div className="bg-gradient-to-r from-accent/10 via-primary/10 to-accent/10 rounded-xl p-4 md:p-6 mb-6 border border-primary/20 shadow-lg">
