@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, SwitchCamera, ZoomIn, ZoomOut, ExternalLink, ShoppingCart } from "lucide-react";
+import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, SwitchCamera, ZoomIn, ZoomOut, ExternalLink, ShoppingCart, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
