@@ -47,6 +47,8 @@ const Index = () => {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
   const [zoom, setZoom] = useState<number>(1);
+  const [ingredientLabels, setIngredientLabels] = useState<IngredientLabel[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { i18n } = useTranslation();
