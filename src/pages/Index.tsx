@@ -215,8 +215,9 @@ const Index = () => {
 
       const reader = new FileReader();
       reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string);
+      setSelectedImage(e.target?.result as string);
         setRecipe(null);
+        setIngredientLabels([]);
       };
       reader.readAsDataURL(file);
     }
