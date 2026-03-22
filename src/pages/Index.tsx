@@ -375,6 +375,9 @@ const Index = () => {
       // Auto-save the recipe
       await saveRecipe(data.recipe);
       
+      // Auto-analyze ingredients
+      analyzeIngredients();
+
       toast({
         title: "Recipe generated!",
         description: "Your recipe is ready and saved to your collection",
