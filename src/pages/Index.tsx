@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, SwitchCamera, ZoomIn, ZoomOut, ExternalLink, ShoppingCart, Search } from "lucide-react";
+import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, SwitchCamera, ZoomIn, ZoomOut, ExternalLink, ShoppingCart, Search, ArrowLeft } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -50,6 +51,7 @@ const Index = () => {
   const [zoom, setZoom] = useState<number>(1);
   const [ingredientLabels, setIngredientLabels] = useState<IngredientLabel[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { i18n } = useTranslation();
@@ -353,6 +355,19 @@ const Index = () => {
     if (!selectedImage) return;
 
     setIsLoading(true);
+    setLoadingProgress(0);
+    
+    // Animate progress bar
+    const progressInterval = setInterval(() => {
+      setLoadingProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return 90;
+        }
+        return prev + Math.random() * 15;
+      });
+    }, 500);
+    
     try {
       const { data, error } = await supabase.functions.invoke("generate-recipe", {
         body: { image: selectedImage, language: i18n.language },
@@ -367,9 +382,13 @@ const Index = () => {
           variant: "destructive",
         });
         setIsLoading(false);
+        setLoadingProgress(0);
+        clearInterval(progressInterval);
         return;
       }
 
+      setLoadingProgress(100);
+      
       setRecipe(data.recipe);
       setCurrentServings(data.recipe.servingSize || 1);
       
@@ -391,7 +410,9 @@ const Index = () => {
         variant: "destructive",
       });
     } finally {
+      clearInterval(progressInterval);
       setIsLoading(false);
+      setLoadingProgress(0);
     }
   };
 
@@ -508,192 +529,217 @@ const Index = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 pb-16 relative z-10">
         <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
-          {/* Upload Section */}
-          <Card className="border-2 border-dashed hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
-            <CardContent className="p-6 md:p-8">
-              <div className="text-center">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <label htmlFor="image-upload" className="cursor-pointer">
-                  <div className="flex flex-col items-center gap-4">
-                    {selectedImage ? (
-                      <div className="relative w-full max-w-md mx-auto">
-                        <img
-                          src={selectedImage}
-                          alt="Selected food"
-                          className="rounded-lg w-full h-auto object-cover shadow-md"
-                        />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                          <p className="text-white font-medium">Click to change image</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <Upload className="w-16 h-16 text-primary" />
-                        <div>
-                          <p className="text-lg md:text-xl font-semibold mb-1">Upload Food Image</p>
-                          <p className="text-sm md:text-base text-muted-foreground">
-                            Click to upload or drag & drop
-                          </p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </label>
-              </div>
+          {/* Back button when recipe is shown */}
+          {(recipe || isLoading) && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRecipe(null);
+                setSelectedImage(null);
+                setIngredientLabels([]);
+              }}
+              className="transition-all hover:border-primary"
+              disabled={isLoading}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Generate Another Recipe
+            </Button>
+          )}
 
-              {selectedImage && (
-                <div className="mt-6 flex justify-center">
-                  <Button
-                    onClick={generateRecipe}
-                    disabled={isLoading}
-                    size="lg"
-                    className="bg-gradient-to-r from-primary via-accent to-primary transition-all duration-300 shadow-lg hover:shadow-xl"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Generating Recipe...
-                      </>
-                    ) : (
-                      <>
+          {/* Upload, Sample & Camera sections - hidden when loading or recipe shown */}
+          {!isLoading && !recipe && (
+            <>
+              {/* Upload Section */}
+              <Card className="border-2 border-dashed hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
+                <CardContent className="p-6 md:p-8">
+                  <div className="text-center">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <label htmlFor="image-upload" className="cursor-pointer">
+                      <div className="flex flex-col items-center gap-4">
+                        {selectedImage ? (
+                          <div className="relative w-full max-w-md mx-auto">
+                            <img
+                              src={selectedImage}
+                              alt="Selected food"
+                              className="rounded-lg w-full h-auto object-cover shadow-md"
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                              <p className="text-white font-medium">Click to change image</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <Upload className="w-16 h-16 text-primary" />
+                            <div>
+                              <p className="text-lg md:text-xl font-semibold mb-1">Upload Food Image</p>
+                              <p className="text-sm md:text-base text-muted-foreground">
+                                Click to upload or drag & drop
+                              </p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </label>
+                  </div>
+
+                  {selectedImage && (
+                    <div className="mt-6 flex justify-center">
+                      <Button
+                        onClick={generateRecipe}
+                        disabled={isLoading}
+                        size="lg"
+                        className="bg-gradient-to-r from-primary via-accent to-primary transition-all duration-300 shadow-lg hover:shadow-xl"
+                      >
                         <ChefHat className="mr-2 h-5 w-5" />
                         Generate Recipe
-                      </>
-                    )}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Sample Food Images Section */}
-          <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
-            <CardContent className="p-6 md:p-8">
-              <div className="text-center mb-6">
-                <h3 className="text-xl md:text-2xl font-semibold mb-2">Choose from Sample Images</h3>
-                <p className="text-sm md:text-base text-muted-foreground">
-                  Try our AI with these delicious samples
-                </p>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                {sampleImages.map((sample) => (
-                  <div
-                    key={sample.id}
-                    onClick={() => handleSampleImageSelect(sample.url)}
-                    className="cursor-pointer group relative overflow-hidden rounded-xl border-2 border-border hover:border-primary transition-all duration-300 shadow-md hover:shadow-xl"
-                  >
-                    <img
-                      src={sample.url}
-                      alt={sample.name}
-                      className="w-full h-28 md:h-32 object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3">
-                      <p className="text-white font-medium text-sm">{sample.name}</p>
+                      </Button>
                     </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Sample Food Images Section */}
+              <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
+                <CardContent className="p-6 md:p-8">
+                  <div className="text-center mb-6">
+                    <h3 className="text-xl md:text-2xl font-semibold mb-2">Choose from Sample Images</h3>
+                    <p className="text-sm md:text-base text-muted-foreground">
+                      Try our AI with these delicious samples
+                    </p>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Camera Capture Section */}
-          <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
-            <CardContent className="p-6 md:p-8">
-              <div className="text-center">
-                <h3 className="text-xl md:text-2xl font-semibold mb-2">Capture with Camera</h3>
-                <p className="text-sm md:text-base text-muted-foreground mb-6">
-                  Take a photo of your food directly
-                </p>
-
-                {!isCameraActive ? (
-                  <Button
-                    onClick={() => startCamera()}
-                    size="lg"
-                    variant="outline"
-                    className="hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white transition-all duration-300 hover:shadow-lg border-2"
-                  >
-                    <Camera className="mr-2 h-5 w-5" />
-                    Open Camera
-                  </Button>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="relative max-w-md mx-auto rounded-lg overflow-hidden bg-black">
-                      <video
-                        id="camera-preview"
-                        autoPlay
-                        playsInline
-                        muted
-                        className="w-full h-auto min-h-[300px] bg-black"
-                        style={{ objectFit: 'cover' }}
-                      />
-                      <Button
-                        onClick={flipCamera}
-                        size="icon"
-                        variant="secondary"
-                        className="absolute top-4 right-4 rounded-full"
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                    {sampleImages.map((sample) => (
+                      <div
+                        key={sample.id}
+                        onClick={() => handleSampleImageSelect(sample.url)}
+                        className="cursor-pointer group relative overflow-hidden rounded-xl border-2 border-border hover:border-primary transition-all duration-300 shadow-md hover:shadow-xl"
                       >
-                        <SwitchCamera className="h-5 w-5" />
-                      </Button>
-                      <div className="absolute bottom-4 right-4 flex flex-col gap-2">
-                        <Button
-                          onClick={() => handleZoom('in')}
-                          size="icon"
-                          variant="secondary"
-                          className="rounded-full"
-                        >
-                          <ZoomIn className="h-5 w-5" />
-                        </Button>
-                        <Button
-                          onClick={() => handleZoom('out')}
-                          size="icon"
-                          variant="secondary"
-                          className="rounded-full"
-                        >
-                          <ZoomOut className="h-5 w-5" />
-                        </Button>
+                        <img
+                          src={sample.url}
+                          alt={sample.name}
+                          className="w-full h-28 md:h-32 object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3">
+                          <p className="text-white font-medium text-sm">{sample.name}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-3 justify-center flex-wrap">
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Camera Capture Section */}
+              <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
+                <CardContent className="p-6 md:p-8">
+                  <div className="text-center">
+                    <h3 className="text-xl md:text-2xl font-semibold mb-2">Capture with Camera</h3>
+                    <p className="text-sm md:text-base text-muted-foreground mb-6">
+                      Take a photo of your food directly
+                    </p>
+
+                    {!isCameraActive ? (
                       <Button
-                        onClick={capturePhoto}
-                        size="lg"
-                        className="bg-gradient-to-r from-primary via-accent to-primary transition-all duration-300 shadow-lg"
-                      >
-                        <Camera className="mr-2 h-5 w-5" />
-                        Capture Photo
-                      </Button>
-                      <Button
-                        onClick={stopCamera}
+                        onClick={() => startCamera()}
                         size="lg"
                         variant="outline"
-                        className="hover:border-destructive hover:text-destructive transition-all"
+                        className="hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white transition-all duration-300 hover:shadow-lg border-2"
                       >
-                        Cancel
+                        <Camera className="mr-2 h-5 w-5" />
+                        Open Camera
                       </Button>
-                    </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="relative max-w-md mx-auto rounded-lg overflow-hidden bg-black">
+                          <video
+                            id="camera-preview"
+                            autoPlay
+                            playsInline
+                            muted
+                            className="w-full h-auto min-h-[300px] bg-black"
+                            style={{ objectFit: 'cover' }}
+                          />
+                          <Button
+                            onClick={flipCamera}
+                            size="icon"
+                            variant="secondary"
+                            className="absolute top-4 right-4 rounded-full"
+                          >
+                            <SwitchCamera className="h-5 w-5" />
+                          </Button>
+                          <div className="absolute bottom-4 right-4 flex flex-col gap-2">
+                            <Button
+                              onClick={() => handleZoom('in')}
+                              size="icon"
+                              variant="secondary"
+                              className="rounded-full"
+                            >
+                              <ZoomIn className="h-5 w-5" />
+                            </Button>
+                            <Button
+                              onClick={() => handleZoom('out')}
+                              size="icon"
+                              variant="secondary"
+                              className="rounded-full"
+                            >
+                              <ZoomOut className="h-5 w-5" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 justify-center flex-wrap">
+                          <Button
+                            onClick={capturePhoto}
+                            size="lg"
+                            className="bg-gradient-to-r from-primary via-accent to-primary transition-all duration-300 shadow-lg"
+                          >
+                            <Camera className="mr-2 h-5 w-5" />
+                            Capture Photo
+                          </Button>
+                          <Button
+                            onClick={stopCamera}
+                            size="lg"
+                            variant="outline"
+                            className="hover:border-destructive hover:text-destructive transition-all"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </>
+          )}
 
-          {/* Loading Skeleton */}
+          {/* Loading with Progress Bar */}
           {isLoading && (
             <Card className="shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
               <CardContent className="p-8">
                 <div className="space-y-6">
-                  {/* Title Skeleton */}
-                  <div className="h-8 bg-secondary/30 rounded animate-pulse w-2/3"></div>
-                  
-                  {/* Nutritional Values Skeleton */}
-                  <div className="bg-secondary/30 rounded-lg p-4">
-                    <div className="h-6 bg-secondary/50 rounded animate-pulse w-1/3 mb-3"></div>
+                  <div className="text-center space-y-3">
+                    <div className="flex items-center justify-center gap-3">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      <h3 className="text-xl font-semibold">Generating Your Recipe...</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {loadingProgress < 30 ? "Analyzing your food image..." : 
+                       loadingProgress < 60 ? "Identifying ingredients..." : 
+                       loadingProgress < 85 ? "Crafting your recipe..." : 
+                       "Almost done!"}
+                    </p>
+                    <Progress value={loadingProgress} className="h-3 max-w-md mx-auto" />
+                    <p className="text-xs text-muted-foreground">{Math.round(loadingProgress)}%</p>
+                  </div>
+
+                  {/* Skeleton preview */}
+                  <div className="space-y-4 opacity-50">
+                    <div className="h-8 bg-secondary/30 rounded animate-pulse w-2/3"></div>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                       {[1, 2, 3, 4, 5].map((i) => (
                         <div key={i} className="text-center space-y-2">
@@ -702,33 +748,9 @@ const Index = () => {
                         </div>
                       ))}
                     </div>
-                  </div>
-
-                  {/* Ingredients Skeleton */}
-                  <div>
-                    <div className="h-6 bg-secondary/30 rounded animate-pulse w-1/4 mb-3"></div>
                     <div className="space-y-3">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <div key={i} className="flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full bg-secondary/50 animate-pulse"></div>
-                          <div className="h-4 bg-secondary/30 rounded animate-pulse flex-1"></div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Instructions Skeleton */}
-                  <div>
-                    <div className="h-6 bg-secondary/30 rounded animate-pulse w-1/4 mb-3"></div>
-                    <div className="space-y-3">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <div className="h-6 w-6 rounded-full bg-secondary/50 animate-pulse flex-shrink-0"></div>
-                          <div className="flex-1 space-y-2">
-                            <div className="h-4 bg-secondary/30 rounded animate-pulse"></div>
-                            <div className="h-4 bg-secondary/30 rounded animate-pulse w-5/6"></div>
-                          </div>
-                        </div>
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="h-4 bg-secondary/30 rounded animate-pulse"></div>
                       ))}
                     </div>
                   </div>
