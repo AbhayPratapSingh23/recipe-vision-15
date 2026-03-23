@@ -57,9 +57,9 @@ const Index = () => {
   const { i18n } = useTranslation();
 
   const sampleImages = [
-    { id: 1, url: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400", name: "Paneer Tikka" },
-    { id: 2, url: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400", name: "Dal Makhani" },
-    { id: 3, url: "https://images.unsplash.com/photo-1574484284002-952d92456975?w=400", name: "Chole Bhature" },
+    { id: 1, url: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400", name: "Butter Chicken" },
+    { id: 2, url: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400", name: "South Indian Thali" },
+    { id: 3, url: "https://images.unsplash.com/photo-1574484284002-952d92456975?w=400", name: "Biryani" },
     { id: 4, url: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400", name: "Pav Bhaji" },
   ];
 
