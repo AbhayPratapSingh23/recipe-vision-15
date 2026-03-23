@@ -661,9 +661,30 @@ const Index = () => {
                             </Button>
                           </div>
                         </div>
-              <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
-                <CardContent className="p-6 md:p-8">
-                  <div className="text-center">
+                        <div className="flex gap-3 justify-center flex-wrap">
+                          <Button
+                            onClick={capturePhoto}
+                            size="lg"
+                            className="bg-gradient-to-r from-primary via-accent to-primary transition-all duration-300 shadow-lg"
+                          >
+                            <Camera className="mr-2 h-5 w-5" />
+                            Capture Photo
+                          </Button>
+                          <Button
+                            onClick={stopCamera}
+                            size="lg"
+                            variant="outline"
+                            className="hover:border-destructive hover:text-destructive transition-all"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Sample Food Images Section */}
               <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
                 <CardContent className="p-6 md:p-8">
