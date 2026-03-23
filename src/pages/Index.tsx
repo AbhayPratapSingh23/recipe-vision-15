@@ -51,6 +51,7 @@ const Index = () => {
   const [zoom, setZoom] = useState<number>(1);
   const [ingredientLabels, setIngredientLabels] = useState<IngredientLabel[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { i18n } = useTranslation();
