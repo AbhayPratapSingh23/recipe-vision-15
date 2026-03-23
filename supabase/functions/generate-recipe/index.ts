@@ -189,25 +189,46 @@ serve(async (req) => {
     // Parse the JSON response
     let recipe;
     try {
-      // Remove markdown code block wrappers if present
       let cleanResponse = aiResponse.trim();
       
-      // Try to extract JSON from markdown code blocks
+      // Extract JSON from markdown code blocks
       const jsonMatch = cleanResponse.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
       if (jsonMatch) {
         cleanResponse = jsonMatch[1].trim();
       }
       
-      // If still has backticks, try to find JSON object boundaries
-      if (cleanResponse.includes('```')) {
-        const jsonStart = cleanResponse.indexOf('{');
-        const jsonEnd = cleanResponse.lastIndexOf('}');
-        if (jsonStart !== -1 && jsonEnd !== -1) {
-          cleanResponse = cleanResponse.substring(jsonStart, jsonEnd + 1);
-        }
+      // Find JSON object boundaries
+      const jsonStart = cleanResponse.indexOf('{');
+      const jsonEnd = cleanResponse.lastIndexOf('}');
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        cleanResponse = cleanResponse.substring(jsonStart, jsonEnd + 1);
       }
-      
-      recipe = JSON.parse(cleanResponse);
+
+      // Try parsing, if it fails attempt to fix common JSON issues
+      try {
+        recipe = JSON.parse(cleanResponse);
+      } catch {
+        console.log("Initial parse failed, attempting JSON repair...");
+        // Fix missing commas between array elements and object properties
+        let fixed = cleanResponse
+          .replace(/\]\s*\n\s*"/g, '],\n"')  // missing comma after ]
+          .replace(/"\s*\n\s*\[/g, '",\n[')  // missing comma before [
+          .replace(/\}\s*\n\s*"/g, '},\n"')  // missing comma after }
+          .replace(/"\s*\n\s*\{/g, '",\n{'); // missing comma before {
+        
+        // Try to fix unclosed arrays/objects by balancing brackets
+        let openBrackets = 0, openBraces = 0;
+        for (const ch of fixed) {
+          if (ch === '[') openBrackets++;
+          if (ch === ']') openBrackets--;
+          if (ch === '{') openBraces++;
+          if (ch === '}') openBraces--;
+        }
+        while (openBrackets > 0) { fixed = fixed.replace(/,?\s*$/, '') + ']'; openBrackets--; }
+        while (openBraces > 0) { fixed = fixed.replace(/,?\s*$/, '') + '}'; openBraces--; }
+        
+        recipe = JSON.parse(fixed);
+      }
     } catch (parseError) {
       console.error("Failed to parse AI response:", parseError);
       console.error("Raw response:", aiResponse);
