@@ -355,6 +355,19 @@ const Index = () => {
     if (!selectedImage) return;
 
     setIsLoading(true);
+    setLoadingProgress(0);
+    
+    // Animate progress bar
+    const progressInterval = setInterval(() => {
+      setLoadingProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return 90;
+        }
+        return prev + Math.random() * 15;
+      });
+    }, 500);
+    
     try {
       const { data, error } = await supabase.functions.invoke("generate-recipe", {
         body: { image: selectedImage, language: i18n.language },
@@ -369,9 +382,13 @@ const Index = () => {
           variant: "destructive",
         });
         setIsLoading(false);
+        setLoadingProgress(0);
+        clearInterval(progressInterval);
         return;
       }
 
+      setLoadingProgress(100);
+      
       setRecipe(data.recipe);
       setCurrentServings(data.recipe.servingSize || 1);
       
@@ -393,7 +410,9 @@ const Index = () => {
         variant: "destructive",
       });
     } finally {
+      clearInterval(progressInterval);
       setIsLoading(false);
+      setLoadingProgress(0);
     }
   };
 
