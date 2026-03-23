@@ -664,79 +664,32 @@ const Index = () => {
               <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
                 <CardContent className="p-6 md:p-8">
                   <div className="text-center">
-                    <h3 className="text-xl md:text-2xl font-semibold mb-2">Capture with Camera</h3>
-                    <p className="text-sm md:text-base text-muted-foreground mb-6">
-                      Take a photo of your food directly
+              {/* Sample Food Images Section */}
+              <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
+                <CardContent className="p-6 md:p-8">
+                  <div className="text-center mb-6">
+                    <h3 className="text-xl md:text-2xl font-semibold mb-2">Choose from Sample Images</h3>
+                    <p className="text-sm md:text-base text-muted-foreground">
+                      Try our AI with these delicious samples
                     </p>
-
-                    {!isCameraActive ? (
-                      <Button
-                        onClick={() => startCamera()}
-                        size="lg"
-                        variant="outline"
-                        className="hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white transition-all duration-300 hover:shadow-lg border-2"
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                    {sampleImages.map((sample) => (
+                      <div
+                        key={sample.id}
+                        onClick={() => handleSampleImageSelect(sample.url)}
+                        className="cursor-pointer group relative overflow-hidden rounded-xl border-2 border-border hover:border-primary transition-all duration-300 shadow-md hover:shadow-xl"
                       >
-                        <Camera className="mr-2 h-5 w-5" />
-                        Open Camera
-                      </Button>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="relative max-w-md mx-auto rounded-lg overflow-hidden bg-black">
-                          <video
-                            id="camera-preview"
-                            autoPlay
-                            playsInline
-                            muted
-                            className="w-full h-auto min-h-[300px] bg-black"
-                            style={{ objectFit: 'cover' }}
-                          />
-                          <Button
-                            onClick={flipCamera}
-                            size="icon"
-                            variant="secondary"
-                            className="absolute top-4 right-4 rounded-full"
-                          >
-                            <SwitchCamera className="h-5 w-5" />
-                          </Button>
-                          <div className="absolute bottom-4 right-4 flex flex-col gap-2">
-                            <Button
-                              onClick={() => handleZoom('in')}
-                              size="icon"
-                              variant="secondary"
-                              className="rounded-full"
-                            >
-                              <ZoomIn className="h-5 w-5" />
-                            </Button>
-                            <Button
-                              onClick={() => handleZoom('out')}
-                              size="icon"
-                              variant="secondary"
-                              className="rounded-full"
-                            >
-                              <ZoomOut className="h-5 w-5" />
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="flex gap-3 justify-center flex-wrap">
-                          <Button
-                            onClick={capturePhoto}
-                            size="lg"
-                            className="bg-gradient-to-r from-primary via-accent to-primary transition-all duration-300 shadow-lg"
-                          >
-                            <Camera className="mr-2 h-5 w-5" />
-                            Capture Photo
-                          </Button>
-                          <Button
-                            onClick={stopCamera}
-                            size="lg"
-                            variant="outline"
-                            className="hover:border-destructive hover:text-destructive transition-all"
-                          >
-                            Cancel
-                          </Button>
+                        <img
+                          src={sample.url}
+                          alt={sample.name}
+                          className="w-full h-28 md:h-32 object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3">
+                          <p className="text-white font-medium text-sm">{sample.name}</p>
                         </div>
                       </div>
-                    )}
+                    ))}
                   </div>
                 </CardContent>
               </Card>
