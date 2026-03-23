@@ -57,9 +57,9 @@ const Index = () => {
   const { i18n } = useTranslation();
 
   const sampleImages = [
-    { id: 1, url: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400", name: "Paneer Tikka" },
-    { id: 2, url: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400", name: "Dal Makhani" },
-    { id: 3, url: "https://images.unsplash.com/photo-1574484284002-952d92456975?w=400", name: "Chole Bhature" },
+    { id: 1, url: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400", name: "Butter Chicken" },
+    { id: 2, url: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400", name: "South Indian Thali" },
+    { id: 3, url: "https://images.unsplash.com/photo-1574484284002-952d92456975?w=400", name: "Biryani" },
     { id: 4, url: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400", name: "Pav Bhaji" },
   ];
 
@@ -604,36 +604,6 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              {/* Sample Food Images Section */}
-              <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
-                <CardContent className="p-6 md:p-8">
-                  <div className="text-center mb-6">
-                    <h3 className="text-xl md:text-2xl font-semibold mb-2">Choose from Sample Images</h3>
-                    <p className="text-sm md:text-base text-muted-foreground">
-                      Try our AI with these delicious samples
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                    {sampleImages.map((sample) => (
-                      <div
-                        key={sample.id}
-                        onClick={() => handleSampleImageSelect(sample.url)}
-                        className="cursor-pointer group relative overflow-hidden rounded-xl border-2 border-border hover:border-primary transition-all duration-300 shadow-md hover:shadow-xl"
-                      >
-                        <img
-                          src={sample.url}
-                          alt={sample.name}
-                          className="w-full h-28 md:h-32 object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3">
-                          <p className="text-white font-medium text-sm">{sample.name}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* Camera Capture Section */}
               <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
                 <CardContent className="p-6 md:p-8">
@@ -711,6 +681,36 @@ const Index = () => {
                         </div>
                       </div>
                     )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Sample Food Images Section */}
+              <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
+                <CardContent className="p-6 md:p-8">
+                  <div className="text-center mb-6">
+                    <h3 className="text-xl md:text-2xl font-semibold mb-2">Choose from Sample Images</h3>
+                    <p className="text-sm md:text-base text-muted-foreground">
+                      Try our AI with these delicious samples
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                    {sampleImages.map((sample) => (
+                      <div
+                        key={sample.id}
+                        onClick={() => handleSampleImageSelect(sample.url)}
+                        className="cursor-pointer group relative overflow-hidden rounded-xl border-2 border-border hover:border-primary transition-all duration-300 shadow-md hover:shadow-xl"
+                      >
+                        <img
+                          src={sample.url}
+                          alt={sample.name}
+                          className="w-full h-28 md:h-32 object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3">
+                          <p className="text-white font-medium text-sm">{sample.name}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
