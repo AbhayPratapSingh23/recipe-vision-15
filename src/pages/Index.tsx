@@ -26,6 +26,7 @@ interface Recipe {
   servingSize: number;
   substitutes?: Record<string, string[]>;
   healthRating?: number;
+  healthRatingReason?: string;
   nutritionalValues: {
     calories: string;
     protein: string;
