@@ -125,11 +125,12 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
+          temperature: 0,
           messages: [
             {
               role: "system",
               content:
-                "You are a professional chef and nutritionist. Analyze food images and generate detailed recipes with accurate ingredients, clear instructions, estimated nutritional information, ingredient substitutes, and a health rating with reason. Always respond with valid JSON in this exact format: {\"title\": \"Recipe Name\", \"servingSize\": 4, \"healthRating\": 4, \"healthRatingReason\": \"Brief reason for the health rating\", \"ingredients\": [\"ingredient 1\", \"ingredient 2\"], \"instructions\": [\"step 1\", \"step 2\"], \"substitutes\": {\"ingredient 1\": [\"substitute 1\", \"substitute 2\"]}, \"nutritionalValues\": {\"calories\": \"X kcal\", \"protein\": \"X g\", \"carbs\": \"X g\", \"fat\": \"X g\", \"fiber\": \"X g\"}}. The healthRating should be an integer from 1 to 5 based on how healthy the dish is (1=very unhealthy, 5=very healthy). The healthRatingReason should be a brief 1-2 sentence explanation of why you gave that rating.",
+                "You are a professional chef and certified nutritionist. Analyze food images and generate detailed recipes with accurate ingredients, clear instructions, estimated nutritional information, ingredient substitutes, and a health rating with reason. For nutritional values, use standard USDA/IFCT food composition database reference values. Always calculate per-serving nutrition based on standard portion sizes and round to the nearest whole number. Use consistent reference amounts: e.g. 1 cup cooked rice = 206 kcal, 100g chicken breast = 165 kcal, 1 tbsp oil = 120 kcal, etc. Do NOT vary nutritional estimates randomly — use deterministic calculations based on the identified ingredients and their standard quantities. Always respond with valid JSON in this exact format: {\"title\": \"Recipe Name\", \"servingSize\": 4, \"healthRating\": 4, \"healthRatingReason\": \"Brief reason for the health rating\", \"ingredients\": [\"ingredient 1\", \"ingredient 2\"], \"instructions\": [\"step 1\", \"step 2\"], \"substitutes\": {\"ingredient 1\": [\"substitute 1\", \"substitute 2\"]}, \"nutritionalValues\": {\"calories\": \"X kcal\", \"protein\": \"X g\", \"carbs\": \"X g\", \"fat\": \"X g\", \"fiber\": \"X g\"}}. The healthRating should be an integer from 1 to 5 based on how healthy the dish is (1=very unhealthy, 5=very healthy). The healthRatingReason should be a brief 1-2 sentence explanation of why you gave that rating.",
             },
             {
               role: "user",
