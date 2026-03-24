@@ -108,12 +108,32 @@ serve(async (req) => {
       throw new Error("Invalid response format");
     }
 
-    // Clamp values to 0-100
+    // Clamp values and prevent overlapping labels
     result.labels = result.labels.map((l: any) => ({
       name: l.name,
-      x: Math.max(5, Math.min(95, Number(l.x) || 50)),
-      y: Math.max(5, Math.min(95, Number(l.y) || 50)),
+      x: Math.max(8, Math.min(92, Number(l.x) || 50)),
+      y: Math.max(8, Math.min(92, Number(l.y) || 50)),
     }));
+
+    // Push apart labels that are too close (minimum 12% distance)
+    const MIN_DIST = 12;
+    for (let i = 0; i < result.labels.length; i++) {
+      for (let j = i + 1; j < result.labels.length; j++) {
+        const a = result.labels[i];
+        const b = result.labels[j];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < MIN_DIST) {
+          const angle = Math.atan2(dy, dx) || (Math.PI / 4);
+          const push = (MIN_DIST - dist) / 2 + 1;
+          b.x = Math.max(8, Math.min(92, b.x + Math.cos(angle) * push));
+          b.y = Math.max(8, Math.min(92, b.y + Math.sin(angle) * push));
+          a.x = Math.max(8, Math.min(92, a.x - Math.cos(angle) * push));
+          a.y = Math.max(8, Math.min(92, a.y - Math.sin(angle) * push));
+        }
+      }
+    }
 
     console.log("Detected ingredients:", result.labels.length);
 
