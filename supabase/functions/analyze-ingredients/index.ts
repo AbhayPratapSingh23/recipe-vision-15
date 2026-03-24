@@ -45,7 +45,7 @@ serve(async (req) => {
             {
               role: "system",
               content:
-                'You are a food ingredient detection expert. Analyze food images and identify visible ingredients/components with their approximate positions. Return valid JSON only in this format: {"labels": [{"name": "ingredient name", "x": 50, "y": 30}, ...]}. The x and y values are percentages (0-100) representing the position in the image where that ingredient/component is most visible. x=0 is left edge, x=100 is right edge, y=0 is top, y=100 is bottom. Identify 4-8 distinct visible ingredients or components. Be specific (e.g. "cilantro garnish", "basmati rice", "marinated chicken", "raita"). Only label things that are clearly visible in the image.',
+                'You are a food ingredient detection expert. Analyze food images and identify ONLY edible food items and ingredients — do NOT label plates, bowls, utensils, napkins, garnish leaves used as decoration, or any non-food objects. Return valid JSON only in this format: {"labels": [{"name": "ingredient name", "x": 50, "y": 30}, ...]}. The x and y values are percentages (0-100) representing the position in the image where that ingredient is most visible. x=0 is left edge, x=100 is right edge, y=0 is top, y=100 is bottom. Identify 4-6 distinct visible food ingredients or components. Be specific (e.g. "basmati rice", "marinated chicken", "dal tadka"). IMPORTANT: Space labels apart — ensure every pair of labels has at least 15 units distance in both x and y coordinates. Do not cluster labels together. Distribute them evenly across the dish.',
             },
             {
               role: "user",
@@ -108,12 +108,32 @@ serve(async (req) => {
       throw new Error("Invalid response format");
     }
 
-    // Clamp values to 0-100
+    // Clamp values and prevent overlapping labels
     result.labels = result.labels.map((l: any) => ({
       name: l.name,
-      x: Math.max(5, Math.min(95, Number(l.x) || 50)),
-      y: Math.max(5, Math.min(95, Number(l.y) || 50)),
+      x: Math.max(8, Math.min(92, Number(l.x) || 50)),
+      y: Math.max(8, Math.min(92, Number(l.y) || 50)),
     }));
+
+    // Push apart labels that are too close (minimum 12% distance)
+    const MIN_DIST = 12;
+    for (let i = 0; i < result.labels.length; i++) {
+      for (let j = i + 1; j < result.labels.length; j++) {
+        const a = result.labels[i];
+        const b = result.labels[j];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < MIN_DIST) {
+          const angle = Math.atan2(dy, dx) || (Math.PI / 4);
+          const push = (MIN_DIST - dist) / 2 + 1;
+          b.x = Math.max(8, Math.min(92, b.x + Math.cos(angle) * push));
+          b.y = Math.max(8, Math.min(92, b.y + Math.sin(angle) * push));
+          a.x = Math.max(8, Math.min(92, a.x - Math.cos(angle) * push));
+          a.y = Math.max(8, Math.min(92, a.y - Math.sin(angle) * push));
+        }
+      }
+    }
 
     console.log("Detected ingredients:", result.labels.length);
 
