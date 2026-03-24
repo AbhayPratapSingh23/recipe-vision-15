@@ -90,6 +90,17 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Auto-regenerate recipe when language changes
+  const prevLangRef = useRef(i18n.language);
+  useEffect(() => {
+    if (prevLangRef.current !== i18n.language) {
+      prevLangRef.current = i18n.language;
+      if (recipe && selectedImage) {
+        generateRecipe();
+      }
+    }
+  }, [i18n.language]);
+
   const loadSavedRecipes = async () => {
     try {
       const { data, error } = await supabase
