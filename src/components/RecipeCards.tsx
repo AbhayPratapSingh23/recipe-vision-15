@@ -4,11 +4,11 @@ import { Badge } from "@/components/ui/badge";
 
 interface RecipeOption {
   title: string;
-  description: string;
-  tag: string;
+  description?: string;
+  tag?: string;
   servingSize: number;
-  healthRating: number;
-  healthRatingReason: string;
+  healthRating?: number;
+  healthRatingReason?: string;
   ingredients: string[];
   instructions: string[];
   substitutes?: Record<string, string[]>;
