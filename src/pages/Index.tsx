@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, SwitchCamera, ZoomIn, ZoomOut, ExternalLink, ShoppingCart, Search, ArrowLeft } from "lucide-react";
+import { Upload, Loader2, ChefHat, LogOut, History, Trash2, Camera, SwitchCamera, ZoomIn, ZoomOut, ExternalLink, ShoppingCart, Search, ArrowLeft, Play } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +11,11 @@ import type { User } from "@supabase/supabase-js";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
+import IngredientEditor from "@/components/IngredientEditor";
+import RecipeCards from "@/components/RecipeCards";
+import CookingMode from "@/components/CookingMode";
+import SmartModifications from "@/components/SmartModifications";
+import RecipeSearch from "@/components/RecipeSearch";
 
 interface IngredientLabel {
   name: string;
@@ -21,6 +26,8 @@ interface IngredientLabel {
 interface Recipe {
   id?: string;
   title: string;
+  description?: string;
+  tag?: string;
   ingredients: string[];
   instructions: string[];
   servingSize: number;
@@ -38,21 +45,31 @@ interface Recipe {
   created_at?: string;
 }
 
+// Flow stages
+type Stage = "upload" | "editIngredients" | "selectRecipe" | "viewRecipe";
+
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [recipeOptions, setRecipeOptions] = useState<Recipe[]>([]);
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
   const [currentServings, setCurrentServings] = useState<number>(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isModifying, setIsModifying] = useState(false);
+  const [activeModification, setActiveModification] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
   const [zoom, setZoom] = useState<number>(1);
   const [ingredientLabels, setIngredientLabels] = useState<IngredientLabel[]>([]);
+  const [detectedIngredients, setDetectedIngredients] = useState<string[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const [stage, setStage] = useState<Stage>("upload");
+  const [showCookingMode, setShowCookingMode] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { i18n } = useTranslation();
@@ -65,7 +82,6 @@ const Index = () => {
   ];
 
   useEffect(() => {
-    // Check authentication
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         navigate("/auth");
@@ -75,44 +91,23 @@ const Index = () => {
       }
     });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session) {
         navigate("/auth");
       } else {
         setUser(session.user);
-        if (event === "SIGNED_IN") {
-          loadSavedRecipes();
-        }
+        if (event === "SIGNED_IN") loadSavedRecipes();
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Auto-regenerate recipe when language changes
-  const prevLangRef = useRef(i18n.language);
-  useEffect(() => {
-    if (prevLangRef.current !== i18n.language) {
-      prevLangRef.current = i18n.language;
-      if (recipe && selectedImage) {
-        generateRecipe();
-      }
-    }
-  }, [i18n.language]);
-
   const loadSavedRecipes = async () => {
     try {
-      const { data, error } = await supabase
-        .from("recipes")
-        .select("*")
-        .order("created_at", { ascending: false });
-
+      const { data, error } = await supabase.from("recipes").select("*").order("created_at", { ascending: false });
       if (error) throw error;
-
       if (data) {
-        // Map database structure to Recipe interface
         const mappedRecipes: Recipe[] = data.map((r) => ({
           id: r.id,
           title: r.title,
@@ -120,13 +115,7 @@ const Index = () => {
           ingredients: r.ingredients as string[],
           instructions: r.instructions as string[],
           substitutes: r.substitutes as Record<string, string[]> | undefined,
-          nutritionalValues: r.nutritional_values as {
-            calories: string;
-            protein: string;
-            carbs: string;
-            fat: string;
-            fiber: string;
-          },
+          nutritionalValues: r.nutritional_values as { calories: string; protein: string; carbs: string; fat: string; fiber: string; },
           image_url: r.image_url || undefined,
           created_at: r.created_at,
         }));
@@ -139,7 +128,6 @@ const Index = () => {
 
   const saveRecipe = async (recipeData: Recipe) => {
     if (!user) return;
-
     try {
       const { error } = await supabase.from("recipes").insert({
         user_id: user.id,
@@ -151,47 +139,24 @@ const Index = () => {
         nutritional_values: recipeData.nutritionalValues,
         image_url: selectedImage || null,
       });
-
       if (error) throw error;
-
-      toast({
-        title: "Recipe saved!",
-        description: "Added to your recipe collection",
-      });
-
+      toast({ title: "Recipe saved!", description: "Added to your recipe collection" });
       loadSavedRecipes();
     } catch (error: any) {
       console.error("Error saving recipe:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save recipe",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to save recipe", variant: "destructive" });
     }
   };
 
   const deleteRecipe = async (recipeId: string) => {
     try {
-      const { error } = await supabase
-        .from("recipes")
-        .delete()
-        .eq("id", recipeId);
-
+      const { error } = await supabase.from("recipes").delete().eq("id", recipeId);
       if (error) throw error;
-
-      toast({
-        title: "Recipe deleted",
-        description: "Removed from your collection",
-      });
-
+      toast({ title: "Recipe deleted", description: "Removed from your collection" });
       loadSavedRecipes();
     } catch (error) {
       console.error("Error deleting recipe:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete recipe",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to delete recipe", variant: "destructive" });
     }
   };
 
@@ -201,17 +166,10 @@ const Index = () => {
   };
 
   const loadSavedRecipe = (savedRecipe: Recipe) => {
-    setRecipe({
-      title: savedRecipe.title,
-      ingredients: savedRecipe.ingredients,
-      instructions: savedRecipe.instructions,
-      servingSize: savedRecipe.servingSize,
-      substitutes: savedRecipe.substitutes,
-      nutritionalValues: savedRecipe.nutritionalValues,
-      id: savedRecipe.id,
-    });
+    setRecipe(savedRecipe);
     setCurrentServings(savedRecipe.servingSize);
     setSelectedImage(savedRecipe.image_url || null);
+    setStage("viewRecipe");
     setShowHistory(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -220,19 +178,16 @@ const Index = () => {
     const file = event.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please upload an image smaller than 5MB",
-          variant: "destructive",
-        });
+        toast({ title: "File too large", description: "Please upload an image smaller than 5MB", variant: "destructive" });
         return;
       }
-
       const reader = new FileReader();
       reader.onload = (e) => {
-      setSelectedImage(e.target?.result as string);
+        setSelectedImage(e.target?.result as string);
         setRecipe(null);
+        setRecipeOptions([]);
         setIngredientLabels([]);
+        setDetectedIngredients([]);
       };
       reader.readAsDataURL(file);
     }
@@ -241,48 +196,29 @@ const Index = () => {
   const handleSampleImageSelect = (imageUrl: string) => {
     setSelectedImage(imageUrl);
     setRecipe(null);
+    setRecipeOptions([]);
     setIngredientLabels([]);
-    toast({
-      title: "Sample image selected",
-      description: "Click Generate Recipe to continue",
-    });
+    setDetectedIngredients([]);
+    toast({ title: "Sample image selected", description: "Click Generate Recipe to continue" });
   };
 
   const startCamera = async (mode: "environment" | "user" = facingMode) => {
     try {
-      // Stop existing stream if any
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: mode,
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        } 
-      });
+      if (stream) stream.getTracks().forEach(track => track.stop());
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: mode, width: { ideal: 1280 }, height: { ideal: 720 } } });
       setStream(mediaStream);
       setIsCameraActive(true);
-      
-      // Wait a bit for the DOM to update
       setTimeout(() => {
         const video = document.getElementById("camera-preview") as HTMLVideoElement;
         if (video) {
           video.srcObject = mediaStream;
           video.setAttribute('playsinline', 'true');
-          video.play().catch(err => {
-            console.error("Error playing video:", err);
-          });
+          video.play().catch(console.error);
         }
       }, 100);
     } catch (error) {
       console.error("Error accessing camera:", error);
-      toast({
-        title: "Camera access denied",
-        description: "Please allow camera access to use this feature",
-        variant: "destructive",
-      });
+      toast({ title: "Camera access denied", description: "Please allow camera access", variant: "destructive" });
     }
   };
 
@@ -294,45 +230,17 @@ const Index = () => {
 
   const handleZoom = (direction: 'in' | 'out') => {
     if (!stream) return;
-    
     const videoTrack = stream.getVideoTracks()[0];
     const capabilities = videoTrack.getCapabilities() as any;
-    
-    if (!capabilities.zoom) {
-      toast({
-        title: "Zoom not supported",
-        description: "Your device doesn't support camera zoom",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    if (!capabilities.zoom) { toast({ title: "Zoom not supported", variant: "destructive" }); return; }
     const settings = videoTrack.getSettings() as any;
     const currentZoom = settings.zoom || 1;
-    const step = 0.5;
-    
-    let newZoom = direction === 'in' 
-      ? Math.min(currentZoom + step, capabilities.zoom.max)
-      : Math.max(currentZoom - step, capabilities.zoom.min);
-    
-    videoTrack.applyConstraints({
-      advanced: [{ zoom: newZoom } as any]
-    }).then(() => {
-      setZoom(newZoom);
-    }).catch(() => {
-      toast({
-        title: "Zoom failed",
-        description: "Could not apply zoom level",
-        variant: "destructive",
-      });
-    });
+    let newZoom = direction === 'in' ? Math.min(currentZoom + 0.5, capabilities.zoom.max) : Math.max(currentZoom - 0.5, capabilities.zoom.min);
+    videoTrack.applyConstraints({ advanced: [{ zoom: newZoom } as any] }).then(() => setZoom(newZoom)).catch(() => toast({ title: "Zoom failed", variant: "destructive" }));
   };
 
   const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
-    }
+    if (stream) { stream.getTracks().forEach(track => track.stop()); setStream(null); }
     setIsCameraActive(false);
   };
 
@@ -347,91 +255,27 @@ const Index = () => {
       const imageData = canvas.toDataURL("image/jpeg");
       setSelectedImage(imageData);
       setRecipe(null);
+      setRecipeOptions([]);
       stopCamera();
-      toast({
-        title: "Photo captured",
-        description: "Click Generate Recipe to continue",
-      });
+      toast({ title: "Photo captured", description: "Click Generate Recipe to continue" });
     }
   };
 
   useEffect(() => {
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
+    return () => { if (stream) stream.getTracks().forEach(track => track.stop()); };
   }, [stream]);
 
-  const generateRecipe = async () => {
-    if (!selectedImage) return;
-
-    setIsLoading(true);
-    setLoadingProgress(0);
-    
-    // Animate progress bar
-    const progressInterval = setInterval(() => {
-      setLoadingProgress(prev => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return 90;
-        }
-        return prev + Math.random() * 15;
-      });
-    }, 500);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-recipe", {
-        body: { image: selectedImage, language: i18n.language },
-      });
-
-      if (error) throw error;
-
-      if (data.error) {
-        toast({
-          title: "Invalid Image",
-          description: data.error,
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        setLoadingProgress(0);
-        clearInterval(progressInterval);
-        return;
-      }
-
-      setLoadingProgress(100);
-      
-      setRecipe(data.recipe);
-      setCurrentServings(data.recipe.servingSize || 1);
-      
-      // Auto-save the recipe
-      await saveRecipe(data.recipe);
-      
-      // Auto-analyze ingredients
-      analyzeIngredients();
-
-      toast({
-        title: "Recipe generated!",
-        description: "Your recipe is ready and saved to your collection",
-      });
-    } catch (error) {
-      console.error("Error generating recipe:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate recipe. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      clearInterval(progressInterval);
-      setIsLoading(false);
-      setLoadingProgress(0);
-    }
-  };
-
-  const analyzeIngredients = async () => {
+  // Step 1: Analyze image to detect ingredients, then go to edit step
+  const analyzeAndEditIngredients = async () => {
     if (!selectedImage) return;
     setIsAnalyzing(true);
-    setIngredientLabels([]);
+    setStage("upload"); // stay on upload while analyzing
+    setLoadingProgress(0);
+
+    const progressInterval = setInterval(() => {
+      setLoadingProgress(prev => prev >= 90 ? (clearInterval(progressInterval), 90) : prev + Math.random() * 15);
+    }, 500);
+
     try {
       const { data, error } = await supabase.functions.invoke("analyze-ingredients", {
         body: { image: selectedImage },
@@ -439,42 +283,132 @@ const Index = () => {
       if (error) throw error;
       if (data?.labels) {
         setIngredientLabels(data.labels);
+        setDetectedIngredients(data.labels.map((l: IngredientLabel) => l.name));
       }
+      setLoadingProgress(100);
+      setStage("editIngredients");
     } catch (error) {
       console.error("Error analyzing ingredients:", error);
-      toast({
-        title: "Analysis failed",
-        description: "Could not detect ingredients in the image",
-        variant: "destructive",
-      });
+      toast({ title: "Analysis failed", description: "Could not detect ingredients", variant: "destructive" });
     } finally {
+      clearInterval(progressInterval);
       setIsAnalyzing(false);
+      setLoadingProgress(0);
     }
+  };
+
+  // Step 2: Generate multiple recipes from ingredients
+  const generateMultipleRecipes = async (ingredients: string[]) => {
+    setIsLoading(true);
+    setLoadingProgress(0);
+    const progressInterval = setInterval(() => {
+      setLoadingProgress(prev => prev >= 90 ? (clearInterval(progressInterval), 90) : prev + Math.random() * 12);
+    }, 500);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-recipes", {
+        body: { ingredients, language: i18n.language },
+      });
+      if (error) throw error;
+      if (data.error) {
+        toast({ title: "Error", description: data.error, variant: "destructive" });
+        return;
+      }
+      setLoadingProgress(100);
+      setRecipeOptions(data.recipes || []);
+      setStage("selectRecipe");
+    } catch (error) {
+      console.error("Error generating recipes:", error);
+      toast({ title: "Error", description: "Failed to generate recipes", variant: "destructive" });
+    } finally {
+      clearInterval(progressInterval);
+      setIsLoading(false);
+      setLoadingProgress(0);
+    }
+  };
+
+  // Step 3: Select a recipe
+  const selectRecipe = async (selected: Recipe) => {
+    setRecipe(selected);
+    setCurrentServings(selected.servingSize || 1);
+    setStage("viewRecipe");
+    await saveRecipe(selected);
+    toast({ title: "Recipe selected!", description: "Your recipe is ready and saved" });
+  };
+
+  // Search recipe by name
+  const searchRecipe = async (query: string) => {
+    setIsSearching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("search-recipe", {
+        body: { query, language: i18n.language },
+      });
+      if (error) throw error;
+      if (data.error) { toast({ title: "Error", description: data.error, variant: "destructive" }); return; }
+      setRecipe(data.recipe);
+      setCurrentServings(data.recipe.servingSize || 1);
+      setSelectedImage(null);
+      setStage("viewRecipe");
+      await saveRecipe(data.recipe);
+      toast({ title: "Recipe found!", description: `${data.recipe.title} is ready` });
+    } catch (error) {
+      console.error("Error searching recipe:", error);
+      toast({ title: "Error", description: "Failed to search recipe", variant: "destructive" });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Smart modification
+  const modifyRecipe = async (modification: string) => {
+    if (!recipe) return;
+    setIsModifying(true);
+    setActiveModification(modification);
+    try {
+      const { data, error } = await supabase.functions.invoke("modify-recipe", {
+        body: { recipe, modification, language: i18n.language },
+      });
+      if (error) throw error;
+      if (data.error) { toast({ title: "Error", description: data.error, variant: "destructive" }); return; }
+      setRecipe(data.recipe);
+      setCurrentServings(data.recipe.servingSize || 1);
+      toast({ title: "Recipe modified!", description: `Applied: ${modification.split(",")[0]}` });
+    } catch (error) {
+      console.error("Error modifying recipe:", error);
+      toast({ title: "Error", description: "Failed to modify recipe", variant: "destructive" });
+    } finally {
+      setIsModifying(false);
+      setActiveModification(null);
+    }
+  };
+
+  const resetToUpload = () => {
+    setStage("upload");
+    setRecipe(null);
+    setRecipeOptions([]);
+    setSelectedImage(null);
+    setIngredientLabels([]);
+    setDetectedIngredients([]);
   };
 
   const scaleIngredient = (ingredient: string): string => {
     if (!recipe) return ingredient;
     const scale = currentServings / recipe.servingSize;
     if (scale === 1) return ingredient;
-    
-    // Extract numbers and scale them
     return ingredient.replace(/(\d+(?:\.\d+)?)\s*([½¼¾⅓⅔⅛⅜⅝⅞])?/g, (match, num, fraction) => {
       let value = parseFloat(num);
       if (fraction) {
         const fractionMap: Record<string, number> = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 0.33, '⅔': 0.67, '⅛': 0.125, '⅜': 0.375, '⅝': 0.625, '⅞': 0.875 };
         value += fractionMap[fraction] || 0;
       }
-      const scaled = (value * scale).toFixed(2).replace(/\.?0+$/, '');
-      return scaled;
+      return (value * scale).toFixed(2).replace(/\.?0+$/, '');
     });
   };
 
   const downloadRecipe = () => {
     if (!recipe) return;
-
     const scaledIngredients = recipe.ingredients.map(i => scaleIngredient(i));
     const content = `${recipe.title}\n\nServing Size: ${currentServings}\n\nIngredients:\n${scaledIngredients.map((i, idx) => `${idx + 1}. ${i}`).join('\n')}\n\nInstructions:\n${recipe.instructions.map((i, idx) => `${idx + 1}. ${i}`).join('\n')}\n\nNutritional Values (per serving):\nCalories: ${recipe.nutritionalValues.calories}\nProtein: ${recipe.nutritionalValues.protein}\nCarbs: ${recipe.nutritionalValues.carbs}\nFat: ${recipe.nutritionalValues.fat}\nFiber: ${recipe.nutritionalValues.fiber}`;
-    
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -486,10 +420,8 @@ const Index = () => {
 
   const downloadIngredients = () => {
     if (!recipe) return;
-
     const scaledIngredients = recipe.ingredients.map(i => scaleIngredient(i));
     const content = `Ingredients for ${recipe.title}\n\nServing Size: ${currentServings}\n\n${scaledIngredients.map((i, idx) => `${idx + 1}. ${i}`).join('\n')}`;
-    
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -499,9 +431,14 @@ const Index = () => {
     URL.revokeObjectURL(url);
   };
 
+  // Cooking mode
+  if (showCookingMode && recipe) {
+    return <CookingMode title={recipe.title} instructions={recipe.instructions} onClose={() => setShowCookingMode(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 relative overflow-hidden">
-      {/* Hero Section */}
+      {/* Header */}
       <header className="container mx-auto px-4 py-8 md:py-16 text-center relative z-10">
         <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
           <div className="flex-1 hidden md:block"></div>
@@ -513,21 +450,11 @@ const Index = () => {
           <div className="flex-1 flex justify-center md:justify-end gap-2 flex-wrap">
             <ThemeToggle />
             <LanguageSwitcher />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowHistory(!showHistory)}
-              className="transition-all hover:border-primary"
-            >
+            <Button variant="outline" size="sm" onClick={() => setShowHistory(!showHistory)} className="transition-all hover:border-primary">
               <History className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Recipe History</span>
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleLogout}
-              className="transition-all hover:border-destructive"
-            >
+            <Button variant="outline" size="sm" onClick={handleLogout} className="transition-all hover:border-destructive">
               <LogOut className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Logout</span>
             </Button>
@@ -541,46 +468,39 @@ const Index = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 pb-16 relative z-10">
         <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
-          {/* Back button when recipe is shown */}
-          {(recipe || isLoading) && (
-            <Button
-              variant="outline"
-              onClick={() => {
-                setRecipe(null);
-                setSelectedImage(null);
-                setIngredientLabels([]);
-              }}
-              className="transition-all hover:border-primary"
-              disabled={isLoading}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Generate Another Recipe
+          {/* Search Bar - always visible on upload stage */}
+          {stage === "upload" && (
+            <Card className="border-2 border-primary/20 shadow-lg backdrop-blur-sm bg-card/95">
+              <CardContent className="p-4 md:p-6">
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <Search className="w-5 h-5 text-primary" />
+                  Search for a Recipe
+                </h3>
+                <RecipeSearch onSearch={searchRecipe} isLoading={isSearching} />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Back button when not on upload */}
+          {stage !== "upload" && (
+            <Button variant="outline" onClick={resetToUpload} className="transition-all hover:border-primary" disabled={isLoading}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Start Over
             </Button>
           )}
 
-          {/* Upload, Sample & Camera sections - hidden when loading or recipe shown */}
-          {!isLoading && !recipe && (
+          {/* STAGE: UPLOAD */}
+          {stage === "upload" && !isAnalyzing && (
             <>
               {/* Upload Section */}
               <Card className="border-2 border-dashed hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
                 <CardContent className="p-6 md:p-8">
                   <div className="text-center">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      id="image-upload"
-                    />
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" id="image-upload" />
                     <label htmlFor="image-upload" className="cursor-pointer">
                       <div className="flex flex-col items-center gap-4">
                         {selectedImage ? (
                           <div className="relative w-full max-w-md mx-auto">
-                            <img
-                              src={selectedImage}
-                              alt="Selected food"
-                              className="rounded-lg w-full h-auto object-cover shadow-md"
-                            />
+                            <img src={selectedImage} alt="Selected food" className="rounded-lg w-full h-auto object-cover shadow-md" />
                             <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
                               <p className="text-white font-medium">Click to change image</p>
                             </div>
@@ -590,9 +510,7 @@ const Index = () => {
                             <Upload className="w-16 h-16 text-primary" />
                             <div>
                               <p className="text-lg md:text-xl font-semibold mb-1">Upload Food Image</p>
-                              <p className="text-sm md:text-base text-muted-foreground">
-                                Click to upload or drag & drop
-                              </p>
+                              <p className="text-sm md:text-base text-muted-foreground">Click to upload or drag & drop</p>
                             </div>
                           </>
                         )}
@@ -602,94 +520,37 @@ const Index = () => {
 
                   {selectedImage && (
                     <div className="mt-6 flex justify-center">
-                      <Button
-                        onClick={generateRecipe}
-                        disabled={isLoading}
-                        size="lg"
-                        className="bg-gradient-to-r from-primary via-accent to-primary transition-all duration-300 shadow-lg hover:shadow-xl"
-                      >
-                        <ChefHat className="mr-2 h-5 w-5" />
-                        Generate Recipe
+                      <Button onClick={analyzeAndEditIngredients} disabled={isAnalyzing} size="lg" className="bg-gradient-to-r from-primary via-accent to-primary transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <ChefHat className="mr-2 h-5 w-5" /> Detect Ingredients & Generate
                       </Button>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-              {/* Camera Capture Section */}
+              {/* Camera Section */}
               <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
                 <CardContent className="p-6 md:p-8">
                   <div className="text-center">
                     <h3 className="text-xl md:text-2xl font-semibold mb-2">Capture with Camera</h3>
-                    <p className="text-sm md:text-base text-muted-foreground mb-6">
-                      Take a photo of your food directly
-                    </p>
-
+                    <p className="text-sm md:text-base text-muted-foreground mb-6">Take a photo of your food directly</p>
                     {!isCameraActive ? (
-                      <Button
-                        onClick={() => startCamera()}
-                        size="lg"
-                        variant="outline"
-                        className="hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white transition-all duration-300 hover:shadow-lg border-2"
-                      >
-                        <Camera className="mr-2 h-5 w-5" />
-                        Open Camera
+                      <Button onClick={() => startCamera()} size="lg" variant="outline" className="hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white transition-all duration-300 hover:shadow-lg border-2">
+                        <Camera className="mr-2 h-5 w-5" /> Open Camera
                       </Button>
                     ) : (
                       <div className="space-y-4">
                         <div className="relative max-w-md mx-auto rounded-lg overflow-hidden bg-black">
-                          <video
-                            id="camera-preview"
-                            autoPlay
-                            playsInline
-                            muted
-                            className="w-full h-auto min-h-[300px] bg-black"
-                            style={{ objectFit: 'cover' }}
-                          />
-                          <Button
-                            onClick={flipCamera}
-                            size="icon"
-                            variant="secondary"
-                            className="absolute top-4 right-4 rounded-full"
-                          >
-                            <SwitchCamera className="h-5 w-5" />
-                          </Button>
+                          <video id="camera-preview" autoPlay playsInline muted className="w-full h-auto min-h-[300px] bg-black" style={{ objectFit: 'cover' }} />
+                          <Button onClick={flipCamera} size="icon" variant="secondary" className="absolute top-4 right-4 rounded-full"><SwitchCamera className="h-5 w-5" /></Button>
                           <div className="absolute bottom-4 right-4 flex flex-col gap-2">
-                            <Button
-                              onClick={() => handleZoom('in')}
-                              size="icon"
-                              variant="secondary"
-                              className="rounded-full"
-                            >
-                              <ZoomIn className="h-5 w-5" />
-                            </Button>
-                            <Button
-                              onClick={() => handleZoom('out')}
-                              size="icon"
-                              variant="secondary"
-                              className="rounded-full"
-                            >
-                              <ZoomOut className="h-5 w-5" />
-                            </Button>
+                            <Button onClick={() => handleZoom('in')} size="icon" variant="secondary" className="rounded-full"><ZoomIn className="h-5 w-5" /></Button>
+                            <Button onClick={() => handleZoom('out')} size="icon" variant="secondary" className="rounded-full"><ZoomOut className="h-5 w-5" /></Button>
                           </div>
                         </div>
                         <div className="flex gap-3 justify-center flex-wrap">
-                          <Button
-                            onClick={capturePhoto}
-                            size="lg"
-                            className="bg-gradient-to-r from-primary via-accent to-primary transition-all duration-300 shadow-lg"
-                          >
-                            <Camera className="mr-2 h-5 w-5" />
-                            Capture Photo
-                          </Button>
-                          <Button
-                            onClick={stopCamera}
-                            size="lg"
-                            variant="outline"
-                            className="hover:border-destructive hover:text-destructive transition-all"
-                          >
-                            Cancel
-                          </Button>
+                          <Button onClick={capturePhoto} size="lg" className="bg-gradient-to-r from-primary via-accent to-primary transition-all duration-300 shadow-lg"><Camera className="mr-2 h-5 w-5" /> Capture Photo</Button>
+                          <Button onClick={stopCamera} size="lg" variant="outline" className="hover:border-destructive hover:text-destructive transition-all">Cancel</Button>
                         </div>
                       </div>
                     )}
@@ -697,27 +558,17 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              {/* Sample Food Images Section */}
+              {/* Sample Images */}
               <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-2xl backdrop-blur-sm bg-card/95">
                 <CardContent className="p-6 md:p-8">
                   <div className="text-center mb-6">
                     <h3 className="text-xl md:text-2xl font-semibold mb-2">Choose from Sample Images</h3>
-                    <p className="text-sm md:text-base text-muted-foreground">
-                      Try our AI with these delicious samples
-                    </p>
+                    <p className="text-sm md:text-base text-muted-foreground">Try our AI with these delicious samples</p>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                     {sampleImages.map((sample) => (
-                      <div
-                        key={sample.id}
-                        onClick={() => handleSampleImageSelect(sample.url)}
-                        className="cursor-pointer group relative overflow-hidden rounded-xl border-2 border-border hover:border-primary transition-all duration-300 shadow-md hover:shadow-xl"
-                      >
-                        <img
-                          src={sample.url}
-                          alt={sample.name}
-                          className="w-full h-28 md:h-32 object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
+                      <div key={sample.id} onClick={() => handleSampleImageSelect(sample.url)} className="cursor-pointer group relative overflow-hidden rounded-xl border-2 border-border hover:border-primary transition-all duration-300 shadow-md hover:shadow-xl">
+                        <img src={sample.url} alt={sample.name} className="w-full h-28 md:h-32 object-cover group-hover:scale-110 transition-transform duration-500" />
                       </div>
                     ))}
                   </div>
@@ -726,61 +577,83 @@ const Index = () => {
             </>
           )}
 
-          {/* Loading with Progress Bar */}
-          {isLoading && (
+          {/* Analyzing progress */}
+          {isAnalyzing && (
             <Card className="shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
               <CardContent className="p-8">
                 <div className="space-y-6">
                   <div className="text-center space-y-3">
                     <div className="flex items-center justify-center gap-3">
                       <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                      <h3 className="text-xl font-semibold">Generating Your Recipe...</h3>
+                      <h3 className="text-xl font-semibold">Detecting Ingredients...</h3>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {loadingProgress < 30 ? "Analyzing your food image..." : 
-                       loadingProgress < 60 ? "Identifying ingredients..." : 
-                       loadingProgress < 85 ? "Crafting your recipe..." : 
-                       "Almost done!"}
-                    </p>
+                    <p className="text-sm text-muted-foreground">Analyzing your food image with AI</p>
                     <Progress value={loadingProgress} className="h-3 max-w-md mx-auto" />
                     <p className="text-xs text-muted-foreground">{Math.round(loadingProgress)}%</p>
-                  </div>
-
-                  {/* Skeleton preview */}
-                  <div className="space-y-4 opacity-50">
-                    <div className="h-8 bg-secondary/30 rounded animate-pulse w-2/3"></div>
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <div key={i} className="text-center space-y-2">
-                          <div className="h-4 bg-secondary/50 rounded animate-pulse w-16 mx-auto"></div>
-                          <div className="h-6 bg-secondary/50 rounded animate-pulse w-12 mx-auto"></div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="space-y-3">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="h-4 bg-secondary/30 rounded animate-pulse"></div>
-                      ))}
-                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Recipe Display */}
-          {recipe && !isLoading && (
+          {/* STAGE: EDIT INGREDIENTS */}
+          {stage === "editIngredients" && (
+            <>
+              {/* Show image with labels */}
+              {selectedImage && (
+                <div className="relative inline-block w-full max-w-lg mx-auto rounded-xl overflow-hidden border-2 border-primary/20 shadow-lg">
+                  <img src={selectedImage} alt="Analyzed dish" className="w-full h-auto block" />
+                  {ingredientLabels.map((label, index) => (
+                    <div key={index} className="absolute" style={{ left: `${label.x}%`, top: `${label.y}%`, transform: 'translate(-50%, -50%)' }}>
+                      <div className="w-3 h-3 rounded-full bg-primary border-2 border-white shadow-lg" />
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 whitespace-nowrap bg-primary/90 text-primary-foreground text-xs font-semibold px-2 py-1 rounded-md shadow-lg backdrop-blur-sm">
+                        {label.name}
+                        <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-r-[6px] border-r-primary/90" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <IngredientEditor ingredients={detectedIngredients} onGenerate={generateMultipleRecipes} isLoading={isLoading} />
+            </>
+          )}
+
+          {/* Loading for recipe generation */}
+          {isLoading && stage === "editIngredients" && (
+            <Card className="shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <CardContent className="p-8">
+                <div className="text-center space-y-3">
+                  <div className="flex items-center justify-center gap-3">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <h3 className="text-xl font-semibold">Generating Recipe Options...</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {loadingProgress < 30 ? "Analyzing ingredients..." : loadingProgress < 60 ? "Crafting recipes..." : loadingProgress < 85 ? "Adding nutritional info..." : "Almost done!"}
+                  </p>
+                  <Progress value={loadingProgress} className="h-3 max-w-md mx-auto" />
+                  <p className="text-xs text-muted-foreground">{Math.round(loadingProgress)}%</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* STAGE: SELECT RECIPE */}
+          {stage === "selectRecipe" && recipeOptions.length > 0 && (
+            <RecipeCards recipes={recipeOptions} onSelect={selectRecipe} />
+          )}
+
+          {/* STAGE: VIEW RECIPE */}
+          {stage === "viewRecipe" && recipe && (
             <Card className="shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/20">
               <CardContent className="p-6 md:p-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
                   <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{recipe.title}</h2>
                   <div className="flex gap-2 flex-wrap">
-                    <Button onClick={downloadIngredients} variant="outline" size="sm" className="transition-all">
-                      Download Ingredients
+                    <Button onClick={() => setShowCookingMode(true)} size="sm" className="bg-gradient-to-r from-primary to-accent gap-1">
+                      <Play className="w-4 h-4" /> Cooking Mode
                     </Button>
-                    <Button onClick={downloadRecipe} variant="outline" size="sm" className="transition-all">
-                      Download Recipe
-                    </Button>
+                    <Button onClick={downloadIngredients} variant="outline" size="sm">Download Ingredients</Button>
+                    <Button onClick={downloadRecipe} variant="outline" size="sm">Download Recipe</Button>
                   </div>
                 </div>
 
@@ -788,66 +661,31 @@ const Index = () => {
                 {selectedImage && (
                   <div className="mb-6">
                     <h3 className="text-lg md:text-xl font-semibold flex items-center gap-2 mb-3">
-                      <Search className="w-5 h-5 text-primary" />
-                      Ingredient Detection
+                      <Search className="w-5 h-5 text-primary" /> Ingredient Detection
                     </h3>
                     <div className="relative inline-block w-full max-w-lg mx-auto rounded-xl overflow-hidden border-2 border-primary/20 shadow-lg">
-                      <img
-                        src={selectedImage}
-                        alt="Analyzed dish"
-                        className="w-full h-auto block"
-                      />
+                      <img src={selectedImage} alt="Analyzed dish" className="w-full h-auto block" />
                       {ingredientLabels.map((label, index) => (
-                        <div
-                          key={index}
-                          className="absolute"
-                          style={{ left: `${label.x}%`, top: `${label.y}%`, transform: 'translate(-50%, -50%)' }}
-                        >
-                          {/* Dot */}
+                        <div key={index} className="absolute" style={{ left: `${label.x}%`, top: `${label.y}%`, transform: 'translate(-50%, -50%)' }}>
                           <div className="w-3 h-3 rounded-full bg-primary border-2 border-white shadow-lg" />
-                          {/* Label */}
                           <div className="absolute left-4 top-1/2 -translate-y-1/2 whitespace-nowrap bg-primary/90 text-primary-foreground text-xs font-semibold px-2 py-1 rounded-md shadow-lg backdrop-blur-sm">
                             {label.name}
-                            {/* Arrow */}
                             <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-r-[6px] border-r-primary/90" />
                           </div>
                         </div>
                       ))}
-                      {isAnalyzing && (
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl">
-                          <div className="flex flex-col items-center gap-2 text-white">
-                            <Loader2 className="w-8 h-8 animate-spin" />
-                            <span className="text-sm font-medium">Detecting ingredients...</span>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
                 )}
 
-                {/* Serving Size Adjuster */}
+                {/* Serving Size */}
                 <div className="bg-gradient-to-r from-accent/10 via-primary/10 to-accent/10 rounded-xl p-4 md:p-6 mb-6 border border-primary/20 shadow-lg">
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-md mx-auto">
                     <span className="text-sm md:text-base font-medium text-foreground">Servings:</span>
                     <div className="flex items-center gap-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentServings(Math.max(1, currentServings - 1))}
-                        disabled={currentServings <= 1}
-                        className="transition-all hover:bg-primary hover:text-white"
-                      >
-                        -
-                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => setCurrentServings(Math.max(1, currentServings - 1))} disabled={currentServings <= 1} className="transition-all hover:bg-primary hover:text-white">-</Button>
                       <span className="text-xl md:text-2xl font-bold w-12 text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{currentServings}</span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentServings(currentServings + 1)}
-                        className="transition-all hover:bg-primary hover:text-white"
-                      >
-                        +
-                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => setCurrentServings(currentServings + 1)} className="transition-all hover:bg-primary hover:text-white">+</Button>
                     </div>
                   </div>
                 </div>
@@ -861,11 +699,7 @@ const Index = () => {
                         <div className="flex items-center gap-3">
                           <div className="flex gap-1">
                             {[1, 2, 3, 4, 5].map((star) => (
-                              <svg
-                                key={star}
-                                className={`w-7 h-7 md:w-8 md:h-8 ${star <= recipe.healthRating! ? 'text-warning fill-warning' : 'text-muted-foreground/30 fill-muted-foreground/30'}`}
-                                viewBox="0 0 24 24"
-                              >
+                              <svg key={star} className={`w-7 h-7 md:w-8 md:h-8 ${star <= recipe.healthRating! ? 'text-warning fill-warning' : 'text-muted-foreground/30 fill-muted-foreground/30'}`} viewBox="0 0 24 24">
                                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                               </svg>
                             ))}
@@ -881,30 +715,14 @@ const Index = () => {
 
                   {/* Nutritional Values */}
                   <div className="bg-gradient-to-br from-success/10 to-success/5 rounded-xl p-4 md:p-6 border border-success/20 shadow-lg">
-                    <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
-                      Nutritional Values (per serving)
-                    </h3>
+                    <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">Nutritional Values (per serving)</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 md:gap-4">
-                      <div className="text-center p-3 bg-card/50 rounded-lg transition-all">
-                        <p className="text-xs md:text-sm text-muted-foreground mb-1">Calories</p>
-                        <p className="text-base md:text-lg font-bold text-success">{recipe.nutritionalValues.calories}</p>
-                      </div>
-                      <div className="text-center p-3 bg-card/50 rounded-lg transition-all">
-                        <p className="text-xs md:text-sm text-muted-foreground mb-1">Protein</p>
-                        <p className="text-base md:text-lg font-bold text-success">{recipe.nutritionalValues.protein}</p>
-                      </div>
-                      <div className="text-center p-3 bg-card/50 rounded-lg transition-all">
-                        <p className="text-xs md:text-sm text-muted-foreground mb-1">Carbs</p>
-                        <p className="text-base md:text-lg font-bold text-success">{recipe.nutritionalValues.carbs}</p>
-                      </div>
-                      <div className="text-center p-3 bg-card/50 rounded-lg transition-all">
-                        <p className="text-xs md:text-sm text-muted-foreground mb-1">Fat</p>
-                        <p className="text-base md:text-lg font-bold text-success">{recipe.nutritionalValues.fat}</p>
-                      </div>
-                      <div className="text-center p-3 bg-card/50 rounded-lg transition-all">
-                        <p className="text-xs md:text-sm text-muted-foreground mb-1">Fiber</p>
-                        <p className="text-base md:text-lg font-bold text-success">{recipe.nutritionalValues.fiber}</p>
-                      </div>
+                      {(["calories", "protein", "carbs", "fat", "fiber"] as const).map((key) => (
+                        <div key={key} className="text-center p-3 bg-card/50 rounded-lg">
+                          <p className="text-xs md:text-sm text-muted-foreground mb-1 capitalize">{key}</p>
+                          <p className="text-base md:text-lg font-bold text-success">{recipe.nutritionalValues[key]}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -938,9 +756,7 @@ const Index = () => {
                         <ol className="space-y-2">
                           {recipe.instructions.map((instruction, index) => (
                             <li key={index} className="flex items-start gap-2 p-1.5 rounded hover:bg-card/50 transition-all">
-                              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-accent to-accent-glow text-white flex items-center justify-center text-xs font-bold shadow">
-                                {index + 1}
-                              </span>
+                              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-accent to-accent-glow text-white flex items-center justify-center text-xs font-bold shadow">{index + 1}</span>
                               <span className="text-foreground text-sm pt-0.5">{instruction}</span>
                             </li>
                           ))}
@@ -948,52 +764,43 @@ const Index = () => {
                       </div>
                     </TabsContent>
                   </Tabs>
+
+                  {/* Smart Modifications */}
+                  <SmartModifications onModify={modifyRecipe} isLoading={isModifying} activeModification={activeModification} />
+
                   {/* YouTube Video */}
                   <div className="bg-gradient-to-br from-destructive/10 to-destructive/5 rounded-xl p-4 md:p-6 border border-destructive/20 shadow-lg">
-                    <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
-                      Watch Recipe Video
-                    </h3>
-                    <a
-                      href={`https://www.youtube.com/results?search_query=${encodeURIComponent(recipe.title + ' recipe')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-4 p-4 rounded-lg bg-card/50 border border-border hover:border-destructive hover:shadow-md transition-all group"
-                    >
+                    <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">Watch Recipe Video</h3>
+                    <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(recipe.title + ' recipe')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 rounded-lg bg-card/50 border border-border hover:border-destructive hover:shadow-md transition-all group">
                       <div className="w-20 h-14 md:w-28 md:h-20 rounded-xl overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform shadow-md relative">
                         {selectedImage ? (
                           <>
                             <img src={selectedImage} alt={recipe.title} className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                               <svg viewBox="0 0 24 24" className="w-8 h-8 md:w-10 md:h-10 text-white fill-current drop-shadow-lg">
-                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                              </svg>
+                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                             </div>
                           </>
                         ) : (
                           <div className="w-full h-full bg-destructive flex items-center justify-center">
-                            <svg viewBox="0 0 24 24" className="w-8 h-8 md:w-10 md:h-10 text-white fill-current">
-                              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                            </svg>
+                            <svg viewBox="0 0 24 24" className="w-8 h-8 md:w-10 md:h-10 text-white fill-current"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-base md:text-lg text-foreground group-hover:text-destructive transition-colors">
-                          {recipe.title} - Recipe Video
-                        </p>
+                        <p className="font-semibold text-base md:text-lg text-foreground group-hover:text-destructive transition-colors">{recipe.title} - Recipe Video</p>
                         <p className="text-sm text-muted-foreground mt-1">Watch step-by-step cooking tutorials on YouTube</p>
                       </div>
                       <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-destructive flex-shrink-0 transition-colors" />
                     </a>
                   </div>
 
-                  {/* Quick Commerce - Buy Ingredients */}
+                  {/* Quick Commerce */}
                   <div className="bg-gradient-to-br from-warning/10 to-warning/5 rounded-xl p-4 md:p-6 border border-warning/20 shadow-lg">
                     <h3 className="text-lg md:text-xl font-semibold mb-2 flex items-center gap-2">
-                      <ShoppingCart className="w-5 h-5 text-warning" />
-                      Buy Ingredients
+                      <ShoppingCart className="w-5 h-5 text-warning" /> Buy Ingredients
                     </h3>
-                    <p className="text-sm text-muted-foreground mb-4">Order ingredients from your favorite quick commerce platform</p>
+                    <p className="text-sm text-muted-foreground mb-4">Order ingredients from your favorite platform</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                       {[
                         { name: "Blinkit", url: "https://blinkit.com/s/?q=", logo: "https://www.google.com/s2/favicons?domain=blinkit.com&sz=64" },
@@ -1002,26 +809,9 @@ const Index = () => {
                         { name: "BigBasket", url: "https://www.bigbasket.com/ps/?q=", logo: "https://www.google.com/s2/favicons?domain=bigbasket.com&sz=64" },
                         { name: "JioMart", url: "https://www.jiomart.com/search/", logo: "https://www.google.com/s2/favicons?domain=jiomart.com&sz=64" },
                       ].map((platform) => (
-                        <a
-                          key={platform.name}
-                          href={`${platform.url}${encodeURIComponent(recipe.title + ' ingredients')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex flex-col items-center gap-2 p-3 rounded-lg bg-card/50 border border-border hover:border-primary hover:shadow-md transition-all group"
-                        >
-                          <img
-                            src={platform.logo}
-                            alt={platform.name}
-                            className="w-10 h-10 rounded-full object-cover shadow-md group-hover:scale-110 transition-transform"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              target.nextElementSibling?.classList.remove('hidden');
-                            }}
-                          />
-                          <div className="hidden w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
-                            {platform.name.charAt(0)}
-                          </div>
+                        <a key={platform.name} href={`${platform.url}${encodeURIComponent(recipe.title + ' ingredients')}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 p-3 rounded-lg bg-card/50 border border-border hover:border-primary hover:shadow-md transition-all group">
+                          <img src={platform.logo} alt={platform.name} className="w-10 h-10 rounded-full object-cover shadow-md group-hover:scale-110 transition-transform" onError={(e) => { const t = e.target as HTMLImageElement; t.style.display = 'none'; t.nextElementSibling?.classList.remove('hidden'); }} />
+                          <div className="hidden w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">{platform.name.charAt(0)}</div>
                           <span className="text-xs md:text-sm font-medium text-center">{platform.name}</span>
                           <ExternalLink className="w-3 h-3 text-muted-foreground" />
                         </a>
@@ -1031,14 +821,7 @@ const Index = () => {
                 </div>
 
                 <div className="mt-8 pt-6 border-t border-primary/20">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedImage(null);
-                      setRecipe(null);
-                    }}
-                    className="w-full sm:w-auto transition-all hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white border-2"
-                  >
+                  <Button variant="outline" onClick={resetToUpload} className="w-full sm:w-auto transition-all hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white border-2">
                     Generate Another Recipe
                   </Button>
                 </div>
@@ -1053,47 +836,20 @@ const Index = () => {
                 <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-6">Your Saved Recipes</h2>
                 <div className="grid gap-4">
                   {savedRecipes.map((savedRecipe) => (
-                    <Card
-                      key={savedRecipe.id}
-                      className="hover:shadow-xl transition-all cursor-pointer border-2 hover:border-primary/50"
-                    >
+                    <Card key={savedRecipe.id} className="hover:shadow-xl transition-all cursor-pointer border-2 hover:border-primary/50">
                       <CardContent className="p-4 md:p-5">
                         <div className="flex flex-col sm:flex-row items-start gap-4">
                           {savedRecipe.image_url && (
-                            <img
-                              src={savedRecipe.image_url}
-                              alt={savedRecipe.title}
-                              className="w-full sm:w-24 h-32 sm:h-24 rounded-lg object-cover shadow-md transition-transform"
-                            />
+                            <img src={savedRecipe.image_url} alt={savedRecipe.title} className="w-full sm:w-24 h-32 sm:h-24 rounded-lg object-cover shadow-md" />
                           )}
                           <div className="flex-1 min-w-0">
                             <h3 className="text-lg md:text-xl font-semibold mb-2 text-primary">{savedRecipe.title}</h3>
-                            <p className="text-xs md:text-sm text-muted-foreground mb-2">
-                              {savedRecipe.ingredients.length} ingredients • {savedRecipe.instructions.length} steps • {savedRecipe.servingSize} servings
-                            </p>
-                            {savedRecipe.created_at && (
-                              <p className="text-xs text-muted-foreground">
-                                Created {new Date(savedRecipe.created_at).toLocaleDateString()}
-                              </p>
-                            )}
+                            <p className="text-xs md:text-sm text-muted-foreground mb-2">{savedRecipe.ingredients.length} ingredients • {savedRecipe.instructions.length} steps • {savedRecipe.servingSize} servings</p>
+                            {savedRecipe.created_at && <p className="text-xs text-muted-foreground">Created {new Date(savedRecipe.created_at).toLocaleDateString()}</p>}
                           </div>
                           <div className="flex gap-2 w-full sm:w-auto">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => loadSavedRecipe(savedRecipe)}
-                              className="flex-1 sm:flex-none transition-all hover:bg-primary hover:text-white"
-                            >
-                              View
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => savedRecipe.id && deleteRecipe(savedRecipe.id)}
-                              className="transition-all hover:bg-destructive hover:text-white"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => loadSavedRecipe(savedRecipe)} className="flex-1 sm:flex-none transition-all hover:bg-primary hover:text-white">View</Button>
+                            <Button variant="outline" size="sm" onClick={() => savedRecipe.id && deleteRecipe(savedRecipe.id)} className="transition-all hover:bg-destructive hover:text-white"><Trash2 className="w-4 h-4" /></Button>
                           </div>
                         </div>
                       </CardContent>
@@ -1109,9 +865,7 @@ const Index = () => {
               <CardContent className="p-8 text-center">
                 <History className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-xl font-semibold mb-2">No Recipes Yet</h3>
-                <p className="text-muted-foreground">
-                  No saved recipes yet. Generate and save your first recipe!
-                </p>
+                <p className="text-muted-foreground">No saved recipes yet. Generate and save your first recipe!</p>
               </CardContent>
             </Card>
           )}
