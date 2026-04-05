@@ -31,7 +31,7 @@ serve(async (req) => {
 
     const langName = language === "hi" ? "Hindi" : language === "ta" ? "Tamil" : language === "te" ? "Telugu" : language === "bn" ? "Bengali" : language === "mr" ? "Marathi" : "English";
 
-    console.log("Generating recipes for:", ingredients);
+    console.log("Generating multiple recipes for ingredients:", ingredients);
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -47,11 +47,11 @@ serve(async (req) => {
           messages: [
             {
               role: "system",
-              content: `You are a professional chef. Given ingredients, suggest 4 recipe options with varied styles. Return valid JSON: {"recipes": [{"title": "...", "description": "Short 5-8 word tagline", "tag": "quick|healthy|comfort|fusion", "servingSize": 4, "healthRating": 4, "healthRatingReason": "Brief reason", "cookingTime": "X mins", "estimatedCost": "₹X - ₹Y", "ingredients": ["ingredient with measurement"], "instructions": ["step"], "substitutes": {"ingredient": ["sub"]}, "nutritionalValues": {"calories": "X kcal", "protein": "X g", "carbs": "X g", "fat": "X g", "fiber": "X g"}}]}. Generate in ${langName}. Use USDA/IFCT nutrition values.`,
+              content: `You are a professional chef. Given a list of ingredients, suggest 4 different recipe options that can be made with those ingredients. Each recipe should have a different style/approach. Always respond with valid JSON in this exact format: {"recipes": [{"title": "Recipe Name", "description": "Short 5-8 word description like quick, healthy, rich and creamy etc.", "tag": "quick|healthy|comfort|fusion", "servingSize": 4, "healthRating": 4, "healthRatingReason": "Brief reason", "ingredients": ["ingredient 1 with measurement"], "instructions": ["step 1", "step 2"], "substitutes": {"ingredient": ["sub1", "sub2"]}, "nutritionalValues": {"calories": "X kcal", "protein": "X g", "carbs": "X g", "fat": "X g", "fiber": "X g"}}]}. Generate in ${langName} language. Use USDA/IFCT reference values for nutrition.`,
             },
             {
               role: "user",
-              content: `Ingredients: ${ingredients.join(", ")}. Generate 4 recipes. Return only valid JSON.`,
+              content: `Here are the ingredients: ${ingredients.join(", ")}. Generate 4 different recipe options with varied cooking styles. Return only valid JSON.`,
             },
           ],
         }),
@@ -61,48 +61,71 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("AI error:", response.status, errorText);
-      if (response.status === 429) return new Response(JSON.stringify({ error: "Rate limit exceeded." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      if (response.status === 402) return new Response(JSON.stringify({ error: "AI credits depleted." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      throw new Error(`AI error: ${response.status}`);
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "AI service credits depleted." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      throw new Error(`AI service error: ${response.status}`);
     }
 
     const data = await response.json();
     const aiResponse = data.choices?.[0]?.message?.content;
-    if (!aiResponse) throw new Error("No content");
+    if (!aiResponse) throw new Error("No content in AI response");
 
     let result;
     try {
       let clean = aiResponse.trim();
       const jsonMatch = clean.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
       if (jsonMatch) clean = jsonMatch[1].trim();
-      const s = clean.indexOf('{');
-      const e = clean.lastIndexOf('}');
-      if (s !== -1 && e !== -1) clean = clean.substring(s, e + 1);
+      const jsonStart = clean.indexOf('{');
+      const jsonEnd = clean.lastIndexOf('}');
+      if (jsonStart !== -1 && jsonEnd !== -1) clean = clean.substring(jsonStart, jsonEnd + 1);
       
-      try { result = JSON.parse(clean); } catch {
-        let fixed = clean.replace(/\]\s*\n\s*"/g, '],\n"').replace(/\}\s*\n\s*"/g, '},\n"');
-        let ob = 0, oc = 0;
-        for (const ch of fixed) { if (ch === '[') ob++; if (ch === ']') ob--; if (ch === '{') oc++; if (ch === '}') oc--; }
-        while (ob > 0) { fixed += ']'; ob--; }
-        while (oc > 0) { fixed += '}'; oc--; }
+      try {
+        result = JSON.parse(clean);
+      } catch {
+        let fixed = clean
+          .replace(/\]\s*\n\s*"/g, '],\n"')
+          .replace(/"\s*\n\s*\[/g, '",\n[')
+          .replace(/\}\s*\n\s*"/g, '},\n"')
+          .replace(/"\s*\n\s*\{/g, '",\n{');
+        let openBrackets = 0, openBraces = 0;
+        for (const ch of fixed) {
+          if (ch === '[') openBrackets++;
+          if (ch === ']') openBrackets--;
+          if (ch === '{') openBraces++;
+          if (ch === '}') openBraces--;
+        }
+        while (openBrackets > 0) { fixed = fixed.replace(/,?\s*$/, '') + ']'; openBrackets--; }
+        while (openBraces > 0) { fixed = fixed.replace(/,?\s*$/, '') + '}'; openBraces--; }
         result = JSON.parse(fixed);
       }
-    } catch {
-      console.error("Parse failed:", aiResponse);
-      throw new Error("Failed to parse recipes");
+    } catch (parseError) {
+      console.error("Failed to parse:", aiResponse);
+      throw new Error("Failed to parse recipes from AI response");
     }
 
-    if (!result.recipes || !Array.isArray(result.recipes)) throw new Error("Invalid format");
+    if (!result.recipes || !Array.isArray(result.recipes)) {
+      throw new Error("Invalid response format");
+    }
 
+    // Validate each recipe
     result.recipes = result.recipes.map((r: any) => ({
-      title: r.title || "Untitled", description: r.description || "", tag: r.tag || "comfort",
-      servingSize: r.servingSize || 4, healthRating: r.healthRating || 3, healthRatingReason: r.healthRatingReason || "",
-      cookingTime: r.cookingTime || null, estimatedCost: r.estimatedCost || null,
+      title: r.title || "Untitled Recipe",
+      description: r.description || "",
+      tag: r.tag || "comfort",
+      servingSize: r.servingSize || 4,
+      healthRating: r.healthRating || 3,
+      healthRatingReason: r.healthRatingReason || "",
       ingredients: Array.isArray(r.ingredients) ? r.ingredients : [],
       instructions: Array.isArray(r.instructions) ? r.instructions : [],
       substitutes: r.substitutes || {},
       nutritionalValues: r.nutritionalValues || { calories: "N/A", protein: "N/A", carbs: "N/A", fat: "N/A", fiber: "N/A" },
     }));
+
+    console.log("Generated", result.recipes.length, "recipes");
 
     return new Response(JSON.stringify(result), {
       status: 200,

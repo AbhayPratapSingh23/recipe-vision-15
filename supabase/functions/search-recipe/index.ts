@@ -47,7 +47,7 @@ serve(async (req) => {
           messages: [
             {
               role: "system",
-              content: `You are a professional chef and nutritionist. Generate a detailed recipe for the requested dish. Use USDA/IFCT reference values for nutrition. Generate in ${langName}. Return valid JSON: {"title": "...", "description": "Short 5-8 word tagline", "servingSize": N, "healthRating": N, "healthRatingReason": "...", "cookingTime": "X mins", "estimatedCost": "₹X - ₹Y", "ingredients": ["..."], "instructions": ["..."], "substitutes": {"ingredient": ["sub1"]}, "nutritionalValues": {"calories": "X kcal", "protein": "X g", "carbs": "X g", "fat": "X g", "fiber": "X g"}}`,
+              content: `You are a professional chef and nutritionist. Generate a detailed recipe for the requested dish. Use USDA/IFCT reference values for nutrition. Generate in ${langName}. Return valid JSON: {"title": "...", "servingSize": N, "healthRating": N, "healthRatingReason": "...", "ingredients": ["..."], "instructions": ["..."], "substitutes": {"ingredient": ["sub1"]}, "nutritionalValues": {"calories": "X kcal", "protein": "X g", "carbs": "X g", "fat": "X g", "fiber": "X g"}}`,
             },
             {
               role: "user",
@@ -90,8 +90,6 @@ serve(async (req) => {
 
     recipe.nutritionalValues = recipe.nutritionalValues || { calories: "N/A", protein: "N/A", carbs: "N/A", fat: "N/A", fiber: "N/A" };
     recipe.servingSize = recipe.servingSize || 1;
-    recipe.cookingTime = recipe.cookingTime || null;
-    recipe.estimatedCost = recipe.estimatedCost || null;
 
     return new Response(JSON.stringify({ recipe }), {
       status: 200,
