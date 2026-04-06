@@ -800,7 +800,7 @@ const Index = () => {
                   {/* Quick Commerce */}
                   <div className="bg-gradient-to-br from-accent/10 to-primary/5 rounded-xl p-4 md:p-6 border border-primary/20 shadow-lg">
                     <h3 className="text-lg md:text-xl font-semibold mb-2 flex items-center gap-2">
-                      <ShoppingCart className="w-5 h-5 text-warning" /> Buy Ingredients
+                      <ShoppingCart className="w-5 h-5 text-primary" /> Buy Ingredients
                     </h3>
                     <p className="text-sm text-muted-foreground mb-4">Order ingredients from your favorite platform</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
