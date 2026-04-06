@@ -798,7 +798,7 @@ const Index = () => {
                   </div>
 
                   {/* Quick Commerce */}
-                  <div className="bg-gradient-to-br from-warning/10 to-warning/5 rounded-xl p-4 md:p-6 border border-warning/20 shadow-lg">
+                  <div className="bg-gradient-to-br from-accent/10 to-primary/5 rounded-xl p-4 md:p-6 border border-primary/20 shadow-lg">
                     <h3 className="text-lg md:text-xl font-semibold mb-2 flex items-center gap-2">
                       <ShoppingCart className="w-5 h-5 text-warning" /> Buy Ingredients
                     </h3>
