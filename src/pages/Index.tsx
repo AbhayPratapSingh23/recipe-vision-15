@@ -646,7 +646,6 @@ const Index = () => {
 
           {/* STAGE: VIEW RECIPE */}
           {stage === "viewRecipe" && recipe && (
-          {stage === "viewRecipe" && recipe && (
             <Card className="shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/20">
               <CardContent className="p-6 md:p-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
