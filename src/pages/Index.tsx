@@ -46,7 +46,7 @@ interface Recipe {
 }
 
 // Flow stages
-type Stage = "upload" | "editIngredients" | "selectRecipe" | "viewRecipe";
+type Stage = "upload" | "editIngredients" | "viewRecipe";
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
