@@ -46,7 +46,7 @@ interface Recipe {
 }
 
 // Flow stages
-type Stage = "upload" | "editIngredients" | "selectRecipe" | "viewRecipe";
+type Stage = "upload" | "editIngredients" | "viewRecipe";
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -297,8 +297,8 @@ const Index = () => {
     }
   };
 
-  // Step 2: Generate multiple recipes from ingredients
-  const generateMultipleRecipes = async (ingredients: string[]) => {
+  // Step 2: Generate a single recipe from ingredients
+  const generateRecipeFromIngredients = async (ingredients: string[]) => {
     setIsLoading(true);
     setLoadingProgress(0);
     const progressInterval = setInterval(() => {
@@ -315,11 +315,18 @@ const Index = () => {
         return;
       }
       setLoadingProgress(100);
-      setRecipeOptions(data.recipes || []);
-      setStage("selectRecipe");
+      const recipes = data.recipes || [];
+      if (recipes.length > 0) {
+        const selected = recipes[0];
+        setRecipe(selected);
+        setCurrentServings(selected.servingSize || 1);
+        setStage("viewRecipe");
+        await saveRecipe(selected);
+        toast({ title: "Recipe generated!", description: "Your recipe is ready" });
+      }
     } catch (error) {
-      console.error("Error generating recipes:", error);
-      toast({ title: "Error", description: "Failed to generate recipes", variant: "destructive" });
+      console.error("Error generating recipe:", error);
+      toast({ title: "Error", description: "Failed to generate recipe", variant: "destructive" });
     } finally {
       clearInterval(progressInterval);
       setIsLoading(false);
@@ -614,7 +621,7 @@ const Index = () => {
                   ))}
                 </div>
               )}
-              <IngredientEditor ingredients={detectedIngredients} onGenerate={generateMultipleRecipes} isLoading={isLoading} />
+              <IngredientEditor ingredients={detectedIngredients} onGenerate={generateRecipeFromIngredients} isLoading={isLoading} />
             </>
           )}
 
@@ -635,11 +642,6 @@ const Index = () => {
                 </div>
               </CardContent>
             </Card>
-          )}
-
-          {/* STAGE: SELECT RECIPE */}
-          {stage === "selectRecipe" && recipeOptions.length > 0 && (
-            <RecipeCards recipes={recipeOptions} onSelect={selectRecipe} />
           )}
 
           {/* STAGE: VIEW RECIPE */}
