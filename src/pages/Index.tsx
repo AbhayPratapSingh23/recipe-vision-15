@@ -822,11 +822,6 @@ const Index = () => {
                   </div>
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-primary/20">
-                  <Button variant="outline" onClick={resetToUpload} className="w-full sm:w-auto transition-all hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:text-white border-2">
-                    Generate Another Recipe
-                  </Button>
-                </div>
               </CardContent>
             </Card>
           )}
