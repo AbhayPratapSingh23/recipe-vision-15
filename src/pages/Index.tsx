@@ -644,12 +644,8 @@ const Index = () => {
             </Card>
           )}
 
-          {/* STAGE: SELECT RECIPE */}
-          {stage === "selectRecipe" && recipeOptions.length > 0 && (
-            <RecipeCards recipes={recipeOptions} onSelect={selectRecipe} />
-          )}
-
           {/* STAGE: VIEW RECIPE */}
+          {stage === "viewRecipe" && recipe && (
           {stage === "viewRecipe" && recipe && (
             <Card className="shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/20">
               <CardContent className="p-6 md:p-8">
