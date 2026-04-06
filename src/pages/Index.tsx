@@ -771,29 +771,29 @@ const Index = () => {
                   <SmartModifications onModify={modifyRecipe} isLoading={isModifying} activeModification={activeModification} />
 
                   {/* YouTube Video */}
-                  <div className="bg-gradient-to-br from-destructive/10 to-destructive/5 rounded-xl p-4 md:p-6 border border-destructive/20 shadow-lg">
+                  <div className="bg-gradient-to-br from-primary/10 to-accent/5 rounded-xl p-4 md:p-6 border border-primary/20 shadow-lg">
                     <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">Watch Recipe Video</h3>
-                    <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(recipe.title + ' recipe')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 rounded-lg bg-card/50 border border-border hover:border-destructive hover:shadow-md transition-all group">
+                    <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(recipe.title + ' recipe')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 rounded-lg bg-card/50 border border-border hover:border-primary hover:shadow-md transition-all group">
                       <div className="w-20 h-14 md:w-28 md:h-20 rounded-xl overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform shadow-md relative">
                         {selectedImage ? (
                           <>
                             <img src={selectedImage} alt={recipe.title} className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                              <svg viewBox="0 0 24 24" className="w-8 h-8 md:w-10 md:h-10 text-white fill-current drop-shadow-lg">
+                              <svg viewBox="0 0 24 24" className="w-8 h-8 md:w-10 md:h-10 text-primary-foreground fill-current drop-shadow-lg">
                                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                             </div>
                           </>
                         ) : (
-                          <div className="w-full h-full bg-destructive flex items-center justify-center">
-                            <svg viewBox="0 0 24 24" className="w-8 h-8 md:w-10 md:h-10 text-white fill-current"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                          <div className="w-full h-full bg-primary flex items-center justify-center">
+                            <svg viewBox="0 0 24 24" className="w-8 h-8 md:w-10 md:h-10 text-primary-foreground fill-current"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-base md:text-lg text-foreground group-hover:text-destructive transition-colors">{recipe.title} - Recipe Video</p>
+                        <p className="font-semibold text-base md:text-lg text-foreground group-hover:text-primary transition-colors">{recipe.title} - Recipe Video</p>
                         <p className="text-sm text-muted-foreground mt-1">Watch step-by-step cooking tutorials on YouTube</p>
                       </div>
-                      <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-destructive flex-shrink-0 transition-colors" />
+                      <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-primary flex-shrink-0 transition-colors" />
                     </a>
                   </div>
 
