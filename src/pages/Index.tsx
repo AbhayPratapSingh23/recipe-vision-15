@@ -621,7 +621,7 @@ const Index = () => {
                   ))}
                 </div>
               )}
-              <IngredientEditor ingredients={detectedIngredients} onGenerate={generateMultipleRecipes} isLoading={isLoading} />
+              <IngredientEditor ingredients={detectedIngredients} onGenerate={generateRecipeFromIngredients} isLoading={isLoading} />
             </>
           )}
 
