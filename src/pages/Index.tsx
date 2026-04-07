@@ -137,7 +137,7 @@ const Index = () => {
         instructions: recipeData.instructions,
         substitutes: recipeData.substitutes || null,
         nutritional_values: recipeData.nutritionalValues,
-        image_url: selectedImage || null,
+        image_url: recipeData.image_url || selectedImage || null,
       });
       if (error) throw error;
       toast({ title: "Recipe saved!", description: "Added to your recipe collection" });
@@ -352,14 +352,39 @@ const Index = () => {
       });
       if (error) throw error;
       if (data.error) { toast({ title: "Error", description: data.error, variant: "destructive" }); return; }
-      setRecipe(data.recipe);
-      setCurrentServings(data.recipe.servingSize || 1);
-      const dishImageUrl = `https://loremflickr.com/800/600/${encodeURIComponent(data.recipe.title)},food`;
-      setSelectedImage(dishImageUrl);
+
+      const recipeWithImage: Recipe = { ...data.recipe };
+
+      try {
+        const wikiResponse = await fetch(
+          `https://en.wikipedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch=${encodeURIComponent(`${recipeWithImage.title} dish food`)}&gsrlimit=1&prop=pageimages|info&piprop=original&pithumbsize=1200&inprop=url&origin=*`
+        );
+
+        if (wikiResponse.ok) {
+          const wikiData = await wikiResponse.json();
+          const pages = (wikiData?.query?.pages ?? {}) as Record<string, { original?: { source?: string }; thumbnail?: { source?: string } }>;
+          const firstPage = Object.values(pages)[0];
+          recipeWithImage.image_url = firstPage?.original?.source || firstPage?.thumbnail?.source;
+        }
+
+        if (!recipeWithImage.image_url) {
+          const mealResponse = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(recipeWithImage.title)}`);
+          if (mealResponse.ok) {
+            const mealData = await mealResponse.json();
+            recipeWithImage.image_url = mealData?.meals?.[0]?.strMealThumb || undefined;
+          }
+        }
+      } catch (imageError) {
+        console.error("Error fetching dish image:", imageError);
+      }
+
+      setRecipe(recipeWithImage);
+      setCurrentServings(recipeWithImage.servingSize || 1);
+      setSelectedImage(null);
       setIngredientLabels([]);
       setStage("viewRecipe");
-      await saveRecipe(data.recipe);
-      toast({ title: "Recipe found!", description: `${data.recipe.title} is ready` });
+      await saveRecipe(recipeWithImage);
+      toast({ title: "Recipe found!", description: `${recipeWithImage.title} is ready` });
     } catch (error) {
       console.error("Error searching recipe:", error);
       toast({ title: "Error", description: "Failed to search recipe", variant: "destructive" });
@@ -662,13 +687,13 @@ const Index = () => {
                 </div>
 
                 {/* Ingredient Detection on Image */}
-                {selectedImage && (
+                {(selectedImage || recipe.image_url) && (
                   <div className="mb-6">
                     <h3 className="text-lg md:text-xl font-semibold flex items-center gap-2 mb-3">
-                      <Search className="w-5 h-5 text-primary" /> Ingredient Detection
+                      <Search className="w-5 h-5 text-primary" /> {ingredientLabels.length > 0 ? "Ingredient Detection" : "Dish Image"}
                     </h3>
                     <div className="relative inline-block w-full max-w-lg mx-auto rounded-xl overflow-hidden border-2 border-primary/20 shadow-lg">
-                      <img src={selectedImage} alt="Analyzed dish" className="w-full h-auto block" />
+                      <img src={selectedImage || recipe.image_url || undefined} alt={recipe.title} className="w-full h-auto block" />
                       {ingredientLabels.map((label, index) => (
                         <div key={index} className="absolute" style={{ left: `${label.x}%`, top: `${label.y}%`, transform: 'translate(-50%, -50%)' }}>
                           <div className="w-3 h-3 rounded-full bg-primary border-2 border-white shadow-lg" />
@@ -777,9 +802,9 @@ const Index = () => {
                     <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">Watch Recipe Video</h3>
                     <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(recipe.title + ' recipe')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 rounded-lg bg-card/50 border border-border hover:border-primary hover:shadow-md transition-all group">
                       <div className="w-20 h-14 md:w-28 md:h-20 rounded-xl overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform shadow-md relative">
-                        {selectedImage ? (
+                        {recipe.image_url || selectedImage ? (
                           <>
-                            <img src={selectedImage} alt={recipe.title} className="w-full h-full object-cover" />
+                            <img src={recipe.image_url || selectedImage || undefined} alt={recipe.title} className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                               <svg viewBox="0 0 24 24" className="w-8 h-8 md:w-10 md:h-10 text-primary-foreground fill-current drop-shadow-lg">
                                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
@@ -787,7 +812,7 @@ const Index = () => {
                           </>
                         ) : (
                           <div className="w-full h-full relative">
-                            <img src={`https://loremflickr.com/400/300/${encodeURIComponent(recipe.title)},food`} alt={recipe.title} className="w-full h-full object-cover" />
+                            <div className="w-full h-full bg-gradient-to-br from-primary to-accent" />
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                               <svg viewBox="0 0 24 24" className="w-8 h-8 md:w-10 md:h-10 text-primary-foreground fill-current drop-shadow-lg"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                             </div>
