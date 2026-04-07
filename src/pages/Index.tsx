@@ -352,14 +352,39 @@ const Index = () => {
       });
       if (error) throw error;
       if (data.error) { toast({ title: "Error", description: data.error, variant: "destructive" }); return; }
-      setRecipe(data.recipe);
-      setCurrentServings(data.recipe.servingSize || 1);
-      const dishImageUrl = `https://loremflickr.com/800/600/${encodeURIComponent(data.recipe.title)},food`;
-      setSelectedImage(dishImageUrl);
+
+      const recipeWithImage: Recipe = { ...data.recipe };
+
+      try {
+        const wikiResponse = await fetch(
+          `https://en.wikipedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch=${encodeURIComponent(`${recipeWithImage.title} dish food`)}&gsrlimit=1&prop=pageimages|info&piprop=original&pithumbsize=1200&inprop=url&origin=*`
+        );
+
+        if (wikiResponse.ok) {
+          const wikiData = await wikiResponse.json();
+          const pages = (wikiData?.query?.pages ?? {}) as Record<string, { original?: { source?: string }; thumbnail?: { source?: string } }>;
+          const firstPage = Object.values(pages)[0];
+          recipeWithImage.image_url = firstPage?.original?.source || firstPage?.thumbnail?.source;
+        }
+
+        if (!recipeWithImage.image_url) {
+          const mealResponse = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(recipeWithImage.title)}`);
+          if (mealResponse.ok) {
+            const mealData = await mealResponse.json();
+            recipeWithImage.image_url = mealData?.meals?.[0]?.strMealThumb || undefined;
+          }
+        }
+      } catch (imageError) {
+        console.error("Error fetching dish image:", imageError);
+      }
+
+      setRecipe(recipeWithImage);
+      setCurrentServings(recipeWithImage.servingSize || 1);
+      setSelectedImage(null);
       setIngredientLabels([]);
       setStage("viewRecipe");
-      await saveRecipe(data.recipe);
-      toast({ title: "Recipe found!", description: `${data.recipe.title} is ready` });
+      await saveRecipe(recipeWithImage);
+      toast({ title: "Recipe found!", description: `${recipeWithImage.title} is ready` });
     } catch (error) {
       console.error("Error searching recipe:", error);
       toast({ title: "Error", description: "Failed to search recipe", variant: "destructive" });
