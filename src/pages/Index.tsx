@@ -354,8 +354,7 @@ const Index = () => {
       if (data.error) { toast({ title: "Error", description: data.error, variant: "destructive" }); return; }
       setRecipe(data.recipe);
       setCurrentServings(data.recipe.servingSize || 1);
-      // Set an HD dish image from Unsplash based on the recipe title
-      const dishImageUrl = `https://source.unsplash.com/800x600/?${encodeURIComponent(data.recipe.title + ' food dish')}`;
+      const dishImageUrl = `https://loremflickr.com/800/600/${encodeURIComponent(data.recipe.title)},food`;
       setSelectedImage(dishImageUrl);
       setIngredientLabels([]);
       setStage("viewRecipe");
@@ -788,7 +787,7 @@ const Index = () => {
                           </>
                         ) : (
                           <div className="w-full h-full relative">
-                            <img src={`https://source.unsplash.com/400x300/?${encodeURIComponent(recipe.title + ' food dish')}`} alt={recipe.title} className="w-full h-full object-cover" />
+                            <img src={`https://loremflickr.com/400/300/${encodeURIComponent(recipe.title)},food`} alt={recipe.title} className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                               <svg viewBox="0 0 24 24" className="w-8 h-8 md:w-10 md:h-10 text-primary-foreground fill-current drop-shadow-lg"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                             </div>
