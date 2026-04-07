@@ -687,13 +687,13 @@ const Index = () => {
                 </div>
 
                 {/* Ingredient Detection on Image */}
-                {selectedImage && (
+                {(selectedImage || recipe.image_url) && (
                   <div className="mb-6">
                     <h3 className="text-lg md:text-xl font-semibold flex items-center gap-2 mb-3">
-                      <Search className="w-5 h-5 text-primary" /> Ingredient Detection
+                      <Search className="w-5 h-5 text-primary" /> {ingredientLabels.length > 0 ? "Ingredient Detection" : "Dish Image"}
                     </h3>
                     <div className="relative inline-block w-full max-w-lg mx-auto rounded-xl overflow-hidden border-2 border-primary/20 shadow-lg">
-                      <img src={selectedImage} alt="Analyzed dish" className="w-full h-auto block" />
+                      <img src={selectedImage || recipe.image_url || undefined} alt={recipe.title} className="w-full h-auto block" />
                       {ingredientLabels.map((label, index) => (
                         <div key={index} className="absolute" style={{ left: `${label.x}%`, top: `${label.y}%`, transform: 'translate(-50%, -50%)' }}>
                           <div className="w-3 h-3 rounded-full bg-primary border-2 border-white shadow-lg" />
