@@ -137,7 +137,7 @@ const Index = () => {
         instructions: recipeData.instructions,
         substitutes: recipeData.substitutes || null,
         nutritional_values: recipeData.nutritionalValues,
-        image_url: selectedImage || null,
+        image_url: recipeData.image_url || selectedImage || null,
       });
       if (error) throw error;
       toast({ title: "Recipe saved!", description: "Added to your recipe collection" });
