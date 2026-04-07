@@ -354,8 +354,7 @@ const Index = () => {
       if (data.error) { toast({ title: "Error", description: data.error, variant: "destructive" }); return; }
       setRecipe(data.recipe);
       setCurrentServings(data.recipe.servingSize || 1);
-      // Set an HD dish image from Unsplash based on the recipe title
-      const dishImageUrl = `https://source.unsplash.com/800x600/?${encodeURIComponent(data.recipe.title + ' food dish')}`;
+      const dishImageUrl = `https://loremflickr.com/800/600/${encodeURIComponent(data.recipe.title)},food`;
       setSelectedImage(dishImageUrl);
       setIngredientLabels([]);
       setStage("viewRecipe");
