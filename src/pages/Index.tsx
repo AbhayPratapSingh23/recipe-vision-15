@@ -749,7 +749,7 @@ const Index = () => {
                       {(["calories", "protein", "carbs", "fat", "fiber"] as const).map((key) => (
                         <div key={key} className="text-center p-3 bg-card/50 rounded-lg">
                           <p className="text-xs md:text-sm text-muted-foreground mb-1 capitalize">{key}</p>
-                          <p className="text-base md:text-lg font-bold text-success">{recipe.nutritionalValues[key]}</p>
+                          <p className="text-base md:text-lg font-bold text-primary">{recipe.nutritionalValues[key]}</p>
                         </div>
                       ))}
                     </div>
