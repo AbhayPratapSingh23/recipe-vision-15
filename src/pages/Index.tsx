@@ -722,7 +722,7 @@ const Index = () => {
                 <div className="space-y-6">
                   {/* Health Rating */}
                   {recipe.healthRating !== undefined && recipe.healthRating > 0 && (
-                    <div className="bg-gradient-to-br from-success/10 to-primary/5 rounded-xl p-4 md:p-6 border border-success/20 shadow-lg">
+                    <div className="bg-gradient-to-r from-accent/10 via-primary/10 to-accent/10 rounded-xl p-4 md:p-6 border border-primary/20 shadow-lg">
                       <h3 className="text-lg md:text-xl font-semibold mb-3">Health Rating</h3>
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
@@ -733,7 +733,7 @@ const Index = () => {
                               </svg>
                             ))}
                           </div>
-                          <span className="text-xl md:text-2xl font-bold text-warning">{recipe.healthRating}/5</span>
+                          <span className="text-xl md:text-2xl font-bold text-primary">{recipe.healthRating}/5</span>
                         </div>
                         {recipe.healthRatingReason && (
                           <p className="text-sm text-muted-foreground italic max-w-[60%] text-right">{recipe.healthRatingReason}</p>
@@ -743,13 +743,13 @@ const Index = () => {
                   )}
 
                   {/* Nutritional Values */}
-                  <div className="bg-gradient-to-br from-success/10 to-success/5 rounded-xl p-4 md:p-6 border border-success/20 shadow-lg">
+                  <div className="bg-gradient-to-r from-accent/10 via-primary/10 to-accent/10 rounded-xl p-4 md:p-6 border border-primary/20 shadow-lg">
                     <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">Nutritional Values (per serving)</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 md:gap-4">
                       {(["calories", "protein", "carbs", "fat", "fiber"] as const).map((key) => (
                         <div key={key} className="text-center p-3 bg-card/50 rounded-lg">
                           <p className="text-xs md:text-sm text-muted-foreground mb-1 capitalize">{key}</p>
-                          <p className="text-base md:text-lg font-bold text-success">{recipe.nutritionalValues[key]}</p>
+                          <p className="text-base md:text-lg font-bold text-primary">{recipe.nutritionalValues[key]}</p>
                         </div>
                       ))}
                     </div>
