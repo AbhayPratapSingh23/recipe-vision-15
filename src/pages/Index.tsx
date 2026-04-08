@@ -722,7 +722,7 @@ const Index = () => {
                 <div className="space-y-6">
                   {/* Health Rating */}
                   {recipe.healthRating !== undefined && recipe.healthRating > 0 && (
-                    <div className="bg-gradient-to-br from-success/10 to-primary/5 rounded-xl p-4 md:p-6 border border-success/20 shadow-lg">
+                    <div className="bg-gradient-to-r from-accent/10 via-primary/10 to-accent/10 rounded-xl p-4 md:p-6 border border-primary/20 shadow-lg">
                       <h3 className="text-lg md:text-xl font-semibold mb-3">Health Rating</h3>
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
