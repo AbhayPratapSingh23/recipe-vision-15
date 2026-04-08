@@ -733,7 +733,7 @@ const Index = () => {
                               </svg>
                             ))}
                           </div>
-                          <span className="text-xl md:text-2xl font-bold text-warning">{recipe.healthRating}/5</span>
+                          <span className="text-xl md:text-2xl font-bold text-primary">{recipe.healthRating}/5</span>
                         </div>
                         {recipe.healthRatingReason && (
                           <p className="text-sm text-muted-foreground italic max-w-[60%] text-right">{recipe.healthRatingReason}</p>
