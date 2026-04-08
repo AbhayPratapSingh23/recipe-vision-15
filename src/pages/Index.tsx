@@ -846,11 +846,11 @@ const Index = () => {
                     <p className="text-sm text-muted-foreground mb-4">Order ingredients from your favorite platform</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                       {[
-                        { name: "Blinkit", url: "https://blinkit.com/s/?q=", logo: "https://logo.clearbit.com/blinkit.com" },
-                        { name: "Zepto", url: "https://www.zeptonow.com/search?query=", logo: "https://logo.clearbit.com/zeptonow.com" },
-                        { name: "Swiggy", url: "https://www.swiggy.com/instamart/search?query=", logo: "https://logo.clearbit.com/swiggy.com" },
-                        { name: "BigBasket", url: "https://www.bigbasket.com/ps/?q=", logo: "https://logo.clearbit.com/bigbasket.com" },
-                        { name: "JioMart", url: "https://www.jiomart.com/search/", logo: "https://logo.clearbit.com/jiomart.com" },
+                        { name: "Blinkit", url: "https://blinkit.com/s/?q=", logo: logoBlinkit },
+                        { name: "Zepto", url: "https://www.zeptonow.com/search?query=", logo: logoZepto },
+                        { name: "Swiggy", url: "https://www.swiggy.com/instamart/search?query=", logo: logoSwiggy },
+                        { name: "BigBasket", url: "https://www.bigbasket.com/ps/?q=", logo: logoBigbasket },
+                        { name: "JioMart", url: "https://www.jiomart.com/search/", logo: logoJiomart },
                       ].map((platform) => (
                         <a key={platform.name} href={`${platform.url}${encodeURIComponent(recipe.title + ' ingredients')}`} target="_blank" rel="noopener noreferrer" className="relative overflow-hidden rounded-xl border border-border hover:border-primary hover:shadow-lg transition-all group aspect-square bg-card flex items-center justify-center">
                           <img src={platform.logo} alt={platform.name} className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform" onError={(e) => { const t = e.target as HTMLImageElement; t.style.display = 'none'; t.nextElementSibling?.classList.remove('hidden'); }} />
