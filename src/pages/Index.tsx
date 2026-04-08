@@ -16,6 +16,11 @@ import RecipeCards from "@/components/RecipeCards";
 import CookingMode from "@/components/CookingMode";
 import SmartModifications from "@/components/SmartModifications";
 import RecipeSearch from "@/components/RecipeSearch";
+import logoBlinkit from "@/assets/logo-blinkit.png";
+import logoZepto from "@/assets/logo-zepto.png";
+import logoSwiggy from "@/assets/logo-swiggy.png";
+import logoBigbasket from "@/assets/logo-bigbasket.png";
+import logoJiomart from "@/assets/logo-jiomart.png";
 
 interface IngredientLabel {
   name: string;
