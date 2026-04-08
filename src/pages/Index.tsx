@@ -744,14 +744,20 @@ const Index = () => {
 
                   {/* Nutritional Values */}
                   <div className="bg-gradient-to-r from-accent/10 via-primary/10 to-accent/10 rounded-xl p-4 md:p-6 border border-primary/20 shadow-lg">
-                    <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">Nutritional Values (per serving)</h3>
+                    <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">Nutritional Values ({currentServings} serving{currentServings > 1 ? 's' : ''})</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 md:gap-4">
-                      {(["calories", "protein", "carbs", "fat", "fiber"] as const).map((key) => (
-                        <div key={key} className="text-center p-3 bg-card/50 rounded-lg">
-                          <p className="text-xs md:text-sm text-muted-foreground mb-1 capitalize">{key}</p>
-                          <p className="text-base md:text-lg font-bold text-primary">{recipe.nutritionalValues[key]}</p>
-                        </div>
-                      ))}
+                      {(["calories", "protein", "carbs", "fat", "fiber"] as const).map((key) => {
+                        const raw = recipe.nutritionalValues[key];
+                        const num = parseFloat(raw);
+                        const unit = raw.replace(/[\d.]+\s*/, '');
+                        const scaled = !isNaN(num) ? Math.round(num * (currentServings / (recipe.servingSize || 1))) : null;
+                        return (
+                          <div key={key} className="text-center p-3 bg-card/50 rounded-lg">
+                            <p className="text-xs md:text-sm text-muted-foreground mb-1 capitalize">{key}</p>
+                            <p className="text-base md:text-lg font-bold text-primary">{scaled !== null ? `${scaled} ${unit}` : raw}</p>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -835,17 +841,18 @@ const Index = () => {
                     <p className="text-sm text-muted-foreground mb-4">Order ingredients from your favorite platform</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                       {[
-                        { name: "Blinkit", url: "https://blinkit.com/s/?q=", logo: "https://www.google.com/s2/favicons?domain=blinkit.com&sz=64" },
-                        { name: "Zepto", url: "https://www.zeptonow.com/search?query=", logo: "https://www.google.com/s2/favicons?domain=zeptonow.com&sz=64" },
-                        { name: "Swiggy", url: "https://www.swiggy.com/instamart/search?query=", logo: "https://www.google.com/s2/favicons?domain=swiggy.com&sz=64" },
-                        { name: "BigBasket", url: "https://www.bigbasket.com/ps/?q=", logo: "https://www.google.com/s2/favicons?domain=bigbasket.com&sz=64" },
-                        { name: "JioMart", url: "https://www.jiomart.com/search/", logo: "https://www.google.com/s2/favicons?domain=jiomart.com&sz=64" },
+                        { name: "Blinkit", url: "https://blinkit.com/s/?q=", logo: "https://logo.clearbit.com/blinkit.com" },
+                        { name: "Zepto", url: "https://www.zeptonow.com/search?query=", logo: "https://logo.clearbit.com/zeptonow.com" },
+                        { name: "Swiggy", url: "https://www.swiggy.com/instamart/search?query=", logo: "https://logo.clearbit.com/swiggy.com" },
+                        { name: "BigBasket", url: "https://www.bigbasket.com/ps/?q=", logo: "https://logo.clearbit.com/bigbasket.com" },
+                        { name: "JioMart", url: "https://www.jiomart.com/search/", logo: "https://logo.clearbit.com/jiomart.com" },
                       ].map((platform) => (
-                        <a key={platform.name} href={`${platform.url}${encodeURIComponent(recipe.title + ' ingredients')}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 p-3 rounded-lg bg-card/50 border border-border hover:border-primary hover:shadow-md transition-all group">
-                          <img src={platform.logo} alt={platform.name} className="w-10 h-10 rounded-full object-cover shadow-md group-hover:scale-110 transition-transform" onError={(e) => { const t = e.target as HTMLImageElement; t.style.display = 'none'; t.nextElementSibling?.classList.remove('hidden'); }} />
-                          <div className="hidden w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">{platform.name.charAt(0)}</div>
-                          <span className="text-xs md:text-sm font-medium text-center">{platform.name}</span>
-                          <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                        <a key={platform.name} href={`${platform.url}${encodeURIComponent(recipe.title + ' ingredients')}`} target="_blank" rel="noopener noreferrer" className="relative overflow-hidden rounded-xl border border-border hover:border-primary hover:shadow-lg transition-all group aspect-square bg-card flex items-center justify-center">
+                          <img src={platform.logo} alt={platform.name} className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform" onError={(e) => { const t = e.target as HTMLImageElement; t.style.display = 'none'; t.nextElementSibling?.classList.remove('hidden'); }} />
+                          <div className="hidden w-full h-full flex items-center justify-center bg-primary/10 text-primary font-bold text-2xl">{platform.name.charAt(0)}</div>
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/90 to-transparent px-2 py-1.5 text-center">
+                            <span className="text-xs font-semibold">{platform.name}</span>
+                          </div>
                         </a>
                       ))}
                     </div>
