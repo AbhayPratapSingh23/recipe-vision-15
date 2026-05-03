@@ -652,24 +652,6 @@ const Index = () => {
             </>
           )}
 
-          {/* Loading for recipe generation */}
-          {isLoading && stage === "editIngredients" && (
-            <Card className="shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <CardContent className="p-8">
-                <div className="text-center space-y-3">
-                  <div className="flex items-center justify-center gap-3">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    <h3 className="text-xl font-semibold">Generating Recipe Options...</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {loadingProgress < 30 ? "Analyzing ingredients..." : loadingProgress < 60 ? "Crafting recipes..." : loadingProgress < 85 ? "Adding nutritional info..." : "Almost done!"}
-                  </p>
-                  <Progress value={loadingProgress} className="h-3 max-w-md mx-auto" />
-                  <p className="text-xs text-muted-foreground">{Math.round(loadingProgress)}%</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* STAGE: VIEW RECIPE */}
           {stage === "viewRecipe" && recipe && (
@@ -838,11 +820,11 @@ const Index = () => {
                     <p className="text-sm text-muted-foreground mb-4">Order ingredients from your favorite platform</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                       {[
-                        { name: "Blinkit", url: "https://blinkit.com/s/?q=", logo: "https://www.google.com/s2/favicons?domain=blinkit.com&sz=64" },
-                        { name: "Zepto", url: "https://www.zeptonow.com/search?query=", logo: "https://www.google.com/s2/favicons?domain=zeptonow.com&sz=64" },
-                        { name: "Swiggy", url: "https://www.swiggy.com/instamart/search?query=", logo: "https://www.google.com/s2/favicons?domain=swiggy.com&sz=64" },
-                        { name: "BigBasket", url: "https://www.bigbasket.com/ps/?q=", logo: "https://www.google.com/s2/favicons?domain=bigbasket.com&sz=64" },
-                        { name: "JioMart", url: "https://www.jiomart.com/search/", logo: "https://www.google.com/s2/favicons?domain=jiomart.com&sz=64" },
+                        { name: "Blinkit", url: "https://blinkit.com/s/?q=", logo: "https://logo.clearbit.com/blinkit.com" },
+                        { name: "Zepto", url: "https://www.zeptonow.com/search?query=", logo: "https://logo.clearbit.com/zeptonow.com" },
+                        { name: "Swiggy", url: "https://www.swiggy.com/instamart/search?query=", logo: "https://logo.clearbit.com/swiggy.com" },
+                        { name: "BigBasket", url: "https://www.bigbasket.com/ps/?q=", logo: "https://logo.clearbit.com/bigbasket.com" },
+                        { name: "JioMart", url: "https://www.jiomart.com/search/", logo: "https://logo.clearbit.com/jiomart.com" },
                       ].map((platform) => (
                         <a key={platform.name} href={`${platform.url}${encodeURIComponent(recipe.title + ' ingredients')}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 p-3 rounded-lg bg-card/50 border border-border hover:border-primary hover:shadow-md transition-all group">
                           <img src={platform.logo} alt={platform.name} className="w-10 h-10 rounded-full object-cover shadow-md group-hover:scale-110 transition-transform" onError={(e) => { const t = e.target as HTMLImageElement; t.style.display = 'none'; t.nextElementSibling?.classList.remove('hidden'); }} />
