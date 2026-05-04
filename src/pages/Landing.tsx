@@ -37,10 +37,6 @@ const Landing = () => {
         <div className="absolute inset-0 bg-[var(--radial-gradient)] pointer-events-none" />
         <div className="container mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center relative">
           <div className="space-y-6 animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
-              <Sparkles className="w-4 h-4" />
-              AI-Powered Recipe Generator
-            </div>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
               Snap a Photo.
               <span className="block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
@@ -76,15 +72,6 @@ const Landing = () => {
               height={1080}
               className="relative rounded-3xl shadow-2xl w-full h-auto object-cover"
             />
-            <div className="absolute -bottom-6 -left-6 bg-card border border-border rounded-2xl p-4 shadow-xl flex items-center gap-3 animate-float">
-              <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
-                <Camera className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <div className="font-semibold text-sm">Photo to Recipe</div>
-                <div className="text-xs text-muted-foreground">In seconds</div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
