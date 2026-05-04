@@ -41,6 +41,8 @@ interface Recipe {
     fat: string;
     fiber: string;
   };
+  costBreakdown?: { item: string; cost: number }[];
+  totalCost?: number;
   image_url?: string;
   created_at?: string;
 }
@@ -652,24 +654,6 @@ const Index = () => {
             </>
           )}
 
-          {/* Loading for recipe generation */}
-          {isLoading && stage === "editIngredients" && (
-            <Card className="shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <CardContent className="p-8">
-                <div className="text-center space-y-3">
-                  <div className="flex items-center justify-center gap-3">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    <h3 className="text-xl font-semibold">Generating Recipe Options...</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {loadingProgress < 30 ? "Analyzing ingredients..." : loadingProgress < 60 ? "Crafting recipes..." : loadingProgress < 85 ? "Adding nutritional info..." : "Almost done!"}
-                  </p>
-                  <Progress value={loadingProgress} className="h-3 max-w-md mx-auto" />
-                  <p className="text-xs text-muted-foreground">{Math.round(loadingProgress)}%</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* STAGE: VIEW RECIPE */}
           {stage === "viewRecipe" && recipe && (
@@ -754,6 +738,34 @@ const Index = () => {
                       ))}
                     </div>
                   </div>
+
+                  {/* Cost Breakdown */}
+                  {recipe.costBreakdown && recipe.costBreakdown.length > 0 && (
+                    <div className="bg-gradient-to-r from-accent/10 via-primary/10 to-accent/10 rounded-xl p-4 md:p-6 border border-primary/20 shadow-lg">
+                      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <h3 className="text-lg md:text-xl font-semibold flex items-center gap-2">
+                          <ShoppingCart className="w-5 h-5 text-primary" /> Cost Breakdown
+                        </h3>
+                        <span className="text-sm text-muted-foreground">Estimated Indian retail prices</span>
+                      </div>
+                      <div className="bg-card/50 rounded-lg overflow-hidden border border-border">
+                        <ul className="divide-y divide-border">
+                          {recipe.costBreakdown.map((c, idx) => (
+                            <li key={idx} className="flex items-center justify-between px-4 py-2.5 text-sm hover:bg-muted/30 transition-colors">
+                              <span className="text-foreground">{c.item}</span>
+                              <span className="font-semibold text-primary">₹{c.cost}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-primary/10 to-accent/10 border-t border-border">
+                          <span className="font-semibold text-foreground">Total Estimated Cost</span>
+                          <span className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                            ₹{recipe.totalCost ?? recipe.costBreakdown.reduce((s, c) => s + (c.cost || 0), 0)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Ingredients & Instructions Tabs */}
                   <Tabs defaultValue="ingredients" className="w-full">
