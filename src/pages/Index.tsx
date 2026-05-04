@@ -654,24 +654,6 @@ const Index = () => {
             </>
           )}
 
-          {/* Loading for recipe generation */}
-          {isLoading && stage === "editIngredients" && (
-            <Card className="shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <CardContent className="p-8">
-                <div className="text-center space-y-3">
-                  <div className="flex items-center justify-center gap-3">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    <h3 className="text-xl font-semibold">Generating Recipe Options...</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {loadingProgress < 30 ? "Analyzing ingredients..." : loadingProgress < 60 ? "Crafting recipes..." : loadingProgress < 85 ? "Adding nutritional info..." : "Almost done!"}
-                  </p>
-                  <Progress value={loadingProgress} className="h-3 max-w-md mx-auto" />
-                  <p className="text-xs text-muted-foreground">{Math.round(loadingProgress)}%</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* STAGE: VIEW RECIPE */}
           {stage === "viewRecipe" && recipe && (
