@@ -112,18 +112,30 @@ serve(async (req) => {
     }
 
     // Validate each recipe
-    result.recipes = result.recipes.map((r: any) => ({
-      title: r.title || "Untitled Recipe",
-      description: r.description || "",
-      tag: r.tag || "comfort",
-      servingSize: r.servingSize || 4,
-      healthRating: r.healthRating || 3,
-      healthRatingReason: r.healthRatingReason || "",
-      ingredients: Array.isArray(r.ingredients) ? r.ingredients : [],
-      instructions: Array.isArray(r.instructions) ? r.instructions : [],
-      substitutes: r.substitutes || {},
-      nutritionalValues: r.nutritionalValues || { calories: "N/A", protein: "N/A", carbs: "N/A", fat: "N/A", fiber: "N/A" },
-    }));
+    result.recipes = result.recipes.map((r: any) => {
+      const costBreakdown = Array.isArray(r.costBreakdown)
+        ? r.costBreakdown
+            .filter((c: any) => c && (c.item || c.name) && (c.cost !== undefined && c.cost !== null))
+            .map((c: any) => ({ item: String(c.item || c.name), cost: Number(c.cost) || 0 }))
+        : [];
+      const totalCost = typeof r.totalCost === "number"
+        ? r.totalCost
+        : costBreakdown.reduce((s: number, c: any) => s + (c.cost || 0), 0);
+      return {
+        title: r.title || "Untitled Recipe",
+        description: r.description || "",
+        tag: r.tag || "comfort",
+        servingSize: r.servingSize || 4,
+        healthRating: r.healthRating || 3,
+        healthRatingReason: r.healthRatingReason || "",
+        ingredients: Array.isArray(r.ingredients) ? r.ingredients : [],
+        instructions: Array.isArray(r.instructions) ? r.instructions : [],
+        substitutes: r.substitutes || {},
+        nutritionalValues: r.nutritionalValues || { calories: "N/A", protein: "N/A", carbs: "N/A", fat: "N/A", fiber: "N/A" },
+        costBreakdown,
+        totalCost,
+      };
+    });
 
     console.log("Generated", result.recipes.length, "recipes");
 
