@@ -441,6 +441,22 @@ const Index = () => {
     });
   };
 
+  const scaleNumberInString = (value: string): string => {
+    if (!recipe) return value;
+    const scale = currentServings / recipe.servingSize;
+    if (scale === 1) return value;
+    return value.replace(/(\d+(?:\.\d+)?)/, (m) => {
+      const n = parseFloat(m) * scale;
+      return n >= 10 ? Math.round(n).toString() : n.toFixed(1).replace(/\.0$/, '');
+    });
+  };
+
+  const scaleCost = (cost: number): number => {
+    if (!recipe) return cost;
+    const scale = currentServings / recipe.servingSize;
+    return Math.round(cost * scale);
+  };
+
   const downloadRecipe = () => {
     if (!recipe) return;
     const scaledIngredients = recipe.ingredients.map(i => scaleIngredient(i));
