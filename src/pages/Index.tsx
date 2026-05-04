@@ -769,14 +769,14 @@ const Index = () => {
                           {recipe.costBreakdown.map((c, idx) => (
                             <li key={idx} className="flex items-center justify-between px-4 py-2.5 text-sm hover:bg-muted/30 transition-colors">
                               <span className="text-foreground">{c.item}</span>
-                              <span className="font-semibold text-primary">₹{c.cost}</span>
+                              <span className="font-semibold text-primary">₹{scaleCost(c.cost)}</span>
                             </li>
                           ))}
                         </ul>
                         <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-primary/10 to-accent/10 border-t border-border">
                           <span className="font-semibold text-foreground">Total Estimated Cost</span>
                           <span className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                            ₹{recipe.totalCost ?? recipe.costBreakdown.reduce((s, c) => s + (c.cost || 0), 0)}
+                            ₹{scaleCost(recipe.totalCost ?? recipe.costBreakdown.reduce((s, c) => s + (c.cost || 0), 0))}
                           </span>
                         </div>
                       </div>
