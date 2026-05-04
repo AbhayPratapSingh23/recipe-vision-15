@@ -739,6 +739,34 @@ const Index = () => {
                     </div>
                   </div>
 
+                  {/* Cost Breakdown */}
+                  {recipe.costBreakdown && recipe.costBreakdown.length > 0 && (
+                    <div className="bg-gradient-to-r from-accent/10 via-primary/10 to-accent/10 rounded-xl p-4 md:p-6 border border-primary/20 shadow-lg">
+                      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <h3 className="text-lg md:text-xl font-semibold flex items-center gap-2">
+                          <ShoppingCart className="w-5 h-5 text-primary" /> Cost Breakdown
+                        </h3>
+                        <span className="text-sm text-muted-foreground">Estimated Indian retail prices</span>
+                      </div>
+                      <div className="bg-card/50 rounded-lg overflow-hidden border border-border">
+                        <ul className="divide-y divide-border">
+                          {recipe.costBreakdown.map((c, idx) => (
+                            <li key={idx} className="flex items-center justify-between px-4 py-2.5 text-sm hover:bg-muted/30 transition-colors">
+                              <span className="text-foreground">{c.item}</span>
+                              <span className="font-semibold text-primary">₹{c.cost}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-primary/10 to-accent/10 border-t border-border">
+                          <span className="font-semibold text-foreground">Total Estimated Cost</span>
+                          <span className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                            ₹{recipe.totalCost ?? recipe.costBreakdown.reduce((s, c) => s + (c.cost || 0), 0)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Ingredients & Instructions Tabs */}
                   <Tabs defaultValue="ingredients" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
