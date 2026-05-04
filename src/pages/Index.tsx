@@ -41,6 +41,8 @@ interface Recipe {
     fat: string;
     fiber: string;
   };
+  costBreakdown?: { item: string; cost: number }[];
+  totalCost?: number;
   image_url?: string;
   created_at?: string;
 }
