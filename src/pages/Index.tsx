@@ -441,6 +441,22 @@ const Index = () => {
     });
   };
 
+  const scaleNumberInString = (value: string): string => {
+    if (!recipe) return value;
+    const scale = currentServings / recipe.servingSize;
+    if (scale === 1) return value;
+    return value.replace(/(\d+(?:\.\d+)?)/, (m) => {
+      const n = parseFloat(m) * scale;
+      return n >= 10 ? Math.round(n).toString() : n.toFixed(1).replace(/\.0$/, '');
+    });
+  };
+
+  const scaleCost = (cost: number): number => {
+    if (!recipe) return cost;
+    const scale = currentServings / recipe.servingSize;
+    return Math.round(cost * scale);
+  };
+
   const downloadRecipe = () => {
     if (!recipe) return;
     const scaledIngredients = recipe.ingredients.map(i => scaleIngredient(i));
@@ -728,12 +744,12 @@ const Index = () => {
 
                   {/* Nutritional Values */}
                   <div className="bg-gradient-to-r from-accent/10 via-primary/10 to-accent/10 rounded-xl p-4 md:p-6 border border-primary/20 shadow-lg">
-                    <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">Nutritional Values (per serving)</h3>
+                    <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">Nutritional Values</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 md:gap-4">
                       {(["calories", "protein", "carbs", "fat", "fiber"] as const).map((key) => (
                         <div key={key} className="text-center p-3 bg-card/50 rounded-lg">
                           <p className="text-xs md:text-sm text-muted-foreground mb-1 capitalize">{key}</p>
-                          <p className="text-base md:text-lg font-bold text-primary">{recipe.nutritionalValues[key]}</p>
+                          <p className="text-base md:text-lg font-bold text-primary">{scaleNumberInString(recipe.nutritionalValues[key])}</p>
                         </div>
                       ))}
                     </div>
@@ -753,14 +769,14 @@ const Index = () => {
                           {recipe.costBreakdown.map((c, idx) => (
                             <li key={idx} className="flex items-center justify-between px-4 py-2.5 text-sm hover:bg-muted/30 transition-colors">
                               <span className="text-foreground">{c.item}</span>
-                              <span className="font-semibold text-primary">₹{c.cost}</span>
+                              <span className="font-semibold text-primary">₹{scaleCost(c.cost)}</span>
                             </li>
                           ))}
                         </ul>
                         <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-primary/10 to-accent/10 border-t border-border">
                           <span className="font-semibold text-foreground">Total Estimated Cost</span>
                           <span className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                            ₹{recipe.totalCost ?? recipe.costBreakdown.reduce((s, c) => s + (c.cost || 0), 0)}
+                            ₹{scaleCost(recipe.totalCost ?? recipe.costBreakdown.reduce((s, c) => s + (c.cost || 0), 0))}
                           </span>
                         </div>
                       </div>
