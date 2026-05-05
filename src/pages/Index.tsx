@@ -784,23 +784,23 @@ const Index = () => {
                         <span className="text-xs sm:text-sm text-muted-foreground">Estimated Indian retail prices</span>
                       </div>
                       <div className="bg-card/50 rounded-lg overflow-hidden border border-border">
-                        <div className="max-h-56 sm:max-h-64 overflow-y-auto overscroll-contain scroll-smooth">
+                        <div className="max-h-56 sm:max-h-64 overflow-y-auto overflow-x-hidden overscroll-contain scroll-smooth">
                           <ul className="divide-y divide-border">
                             {recipe.costBreakdown.map((c, idx) => (
                               <li
                                 key={idx}
                                 style={{ animationDelay: `${idx * 40}ms` }}
-                                className="flex items-center justify-between gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm hover:bg-muted/40 transition-all duration-200 hover:translate-x-1 animate-fade-in"
+                                className="flex items-center justify-between gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm hover:bg-muted/40 transition-all duration-200 animate-fade-in"
                               >
-                                <span className="text-foreground truncate">{c.item}</span>
-                                <span className="font-semibold text-primary whitespace-nowrap">₹{scaleCost(c.cost)}</span>
+                                <span className="text-foreground break-words min-w-0 flex-1">{c.item}</span>
+                                <span className="font-semibold text-primary whitespace-nowrap flex-shrink-0">₹{scaleCost(c.cost)}</span>
                               </li>
                             ))}
                           </ul>
                         </div>
-                        <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-primary/10 to-accent/10 border-t border-border sticky bottom-0 backdrop-blur-sm">
+                        <div className="flex items-center justify-between gap-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-primary/10 to-accent/10 border-t border-border backdrop-blur-sm">
                           <span className="text-sm sm:text-base font-semibold text-foreground">Total Estimated Cost</span>
-                          <span className="text-base sm:text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                          <span className="text-base sm:text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
                             ₹{scaleCost(recipe.totalCost ?? recipe.costBreakdown.reduce((s, c) => s + (c.cost || 0), 0))}
                           </span>
                         </div>
