@@ -513,7 +513,7 @@ const Index = () => {
           <div className="flex-1 flex justify-center md:justify-end gap-2 flex-wrap">
             <ThemeToggle />
             <LanguageSwitcher />
-            <Button variant="outline" size="sm" onClick={() => setShowHistory(!showHistory)} className="transition-all hover:border-primary">
+            <Button variant="outline" size="sm" onClick={handleHistoryToggle} className="transition-all hover:border-primary">
               <History className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Recipe History</span>
             </Button>
