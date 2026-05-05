@@ -546,9 +546,17 @@ const Index = () => {
 
           {/* Back button when not on upload */}
           {stage !== "upload" && (
-            <Button variant="outline" onClick={resetToUpload} className="transition-all hover:border-primary" disabled={isLoading}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Start Over
-            </Button>
+            <div className="flex justify-start">
+              <Button
+                variant="outline"
+                onClick={resetToUpload}
+                className="gap-2 border-2 border-primary/30 hover:border-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-md hover:shadow-lg"
+                disabled={isLoading}
+                size="sm"
+              >
+                <ArrowLeft className="h-4 w-4" /> Start Over
+              </Button>
+            </div>
           )}
 
           {/* STAGE: UPLOAD */}
