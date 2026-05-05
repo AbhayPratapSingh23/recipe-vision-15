@@ -75,6 +75,17 @@ const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { i18n } = useTranslation();
+  const historyRef = useRef<HTMLDivElement>(null);
+
+  const handleHistoryToggle = () => {
+    setShowHistory((prev) => {
+      const next = !prev;
+      if (next) {
+        setTimeout(() => historyRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+      }
+      return next;
+    });
+  };
 
   const sampleImages = [
     { id: 1, url: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400", name: "Butter Chicken" },
@@ -502,7 +513,7 @@ const Index = () => {
           <div className="flex-1 flex justify-center md:justify-end gap-2 flex-wrap">
             <ThemeToggle />
             <LanguageSwitcher />
-            <Button variant="outline" size="sm" onClick={() => setShowHistory(!showHistory)} className="transition-all hover:border-primary">
+            <Button variant="outline" size="sm" onClick={handleHistoryToggle} className="transition-all hover:border-primary">
               <History className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Recipe History</span>
             </Button>
@@ -535,9 +546,17 @@ const Index = () => {
 
           {/* Back button when not on upload */}
           {stage !== "upload" && (
-            <Button variant="outline" onClick={resetToUpload} className="transition-all hover:border-primary" disabled={isLoading}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Start Over
-            </Button>
+            <div className="flex justify-start">
+              <Button
+                variant="outline"
+                onClick={resetToUpload}
+                className="gap-2 border-2 border-primary/30 hover:border-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-md hover:shadow-lg"
+                disabled={isLoading}
+                size="sm"
+              >
+                <ArrowLeft className="h-4 w-4" /> Start Over
+              </Button>
+            </div>
           )}
 
           {/* STAGE: UPLOAD */}
@@ -765,23 +784,23 @@ const Index = () => {
                         <span className="text-xs sm:text-sm text-muted-foreground">Estimated Indian retail prices</span>
                       </div>
                       <div className="bg-card/50 rounded-lg overflow-hidden border border-border">
-                        <div className="max-h-56 sm:max-h-64 overflow-y-auto overscroll-contain scroll-smooth">
+                        <div className="max-h-56 sm:max-h-64 overflow-y-auto overflow-x-hidden overscroll-contain scroll-smooth">
                           <ul className="divide-y divide-border">
                             {recipe.costBreakdown.map((c, idx) => (
                               <li
                                 key={idx}
                                 style={{ animationDelay: `${idx * 40}ms` }}
-                                className="flex items-center justify-between gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm hover:bg-muted/40 transition-all duration-200 hover:translate-x-1 animate-fade-in"
+                                className="flex items-center justify-between gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm hover:bg-muted/40 transition-all duration-200 animate-fade-in"
                               >
-                                <span className="text-foreground truncate">{c.item}</span>
-                                <span className="font-semibold text-primary whitespace-nowrap">₹{scaleCost(c.cost)}</span>
+                                <span className="text-foreground break-words min-w-0 flex-1">{c.item}</span>
+                                <span className="font-semibold text-primary whitespace-nowrap flex-shrink-0">₹{scaleCost(c.cost)}</span>
                               </li>
                             ))}
                           </ul>
                         </div>
-                        <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-primary/10 to-accent/10 border-t border-border sticky bottom-0 backdrop-blur-sm">
+                        <div className="flex items-center justify-between gap-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-primary/10 to-accent/10 border-t border-border backdrop-blur-sm">
                           <span className="text-sm sm:text-base font-semibold text-foreground">Total Estimated Cost</span>
-                          <span className="text-base sm:text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                          <span className="text-base sm:text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent whitespace-nowrap">
                             ₹{scaleCost(recipe.totalCost ?? recipe.costBreakdown.reduce((s, c) => s + (c.cost || 0), 0))}
                           </span>
                         </div>
@@ -894,6 +913,7 @@ const Index = () => {
           )}
 
           {/* Recipe History */}
+          <div ref={historyRef}>
           {showHistory && savedRecipes.length > 0 && (
             <Card className="shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/20">
               <CardContent className="p-6 md:p-8">
@@ -933,6 +953,7 @@ const Index = () => {
               </CardContent>
             </Card>
           )}
+          </div>
         </div>
       </main>
     </div>
