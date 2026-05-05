@@ -92,9 +92,13 @@ const Landing = () => {
               { icon: Search, title: "Search Recipes", desc: "Search any dish by name and get from-scratch recipes." },
               { icon: Play, title: "Video Tutorials", desc: "Watch step-by-step cooking videos for every recipe." },
               { icon: ShoppingCart, title: "Buy Ingredients", desc: "Order ingredients from Blinkit, Zepto, Swiggy & more." },
-            ].map((f) => (
-              <div key={f.title} className="group p-6 rounded-2xl bg-card border border-border hover:border-primary/40 hover:shadow-lg transition-all">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            ].map((f, i) => (
+              <div
+                key={f.title}
+                style={{ animationDelay: `${i * 100}ms` }}
+                className="group p-6 rounded-2xl bg-card/80 backdrop-blur-sm border border-border hover:border-primary/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 animate-fade-in-up"
+              >
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300 shadow-md">
                   <f.icon className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <h3 className="font-semibold text-lg mb-2">{f.title}</h3>
