@@ -913,6 +913,7 @@ const Index = () => {
           )}
 
           {/* Recipe History */}
+          <div ref={historyRef}>
           {showHistory && savedRecipes.length > 0 && (
             <Card className="shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/20">
               <CardContent className="p-6 md:p-8">
