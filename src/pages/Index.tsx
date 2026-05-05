@@ -75,6 +75,17 @@ const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { i18n } = useTranslation();
+  const historyRef = useRef<HTMLDivElement>(null);
+
+  const handleHistoryToggle = () => {
+    setShowHistory((prev) => {
+      const next = !prev;
+      if (next) {
+        setTimeout(() => historyRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+      }
+      return next;
+    });
+  };
 
   const sampleImages = [
     { id: 1, url: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400", name: "Butter Chicken" },
