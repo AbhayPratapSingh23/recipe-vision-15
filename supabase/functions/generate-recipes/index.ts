@@ -42,8 +42,8 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          temperature: 0.3,
+          model: "google/gemini-2.5-flash-lite",
+          temperature: 0.2,
           messages: [
             {
               role: "system",
