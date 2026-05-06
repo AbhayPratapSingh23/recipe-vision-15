@@ -727,10 +727,7 @@ const Index = () => {
                     <Button onClick={() => setShowCookingMode(true)} size="sm" className="bg-gradient-to-r from-primary to-accent gap-1">
                       <Play className="w-4 h-4" /> Cooking Mode
                     </Button>
-                    <Button onClick={downloadIngredients} variant="outline" size="sm">Download Ingredients</Button>
-                    <Button onClick={downloadRecipePdf} size="sm" className="bg-gradient-to-r from-primary to-accent">
-                      Export PDF
-                    </Button>
+                    <Button onClick={downloadRecipePdf} variant="outline" size="sm">Download Recipe</Button>
                   </div>
                 </div>
 
