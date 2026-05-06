@@ -496,6 +496,28 @@ const Index = () => {
     URL.revokeObjectURL(url);
   };
 
+  const downloadRecipePdf = () => {
+    if (!recipe) return;
+    const scaledIngredients = recipe.ingredients.map(i => scaleIngredient(i));
+    const scaledNutrition = {
+      calories: scaleNumberInString(recipe.nutritionalValues.calories),
+      protein: scaleNumberInString(recipe.nutritionalValues.protein),
+      carbs: scaleNumberInString(recipe.nutritionalValues.carbs),
+      fat: scaleNumberInString(recipe.nutritionalValues.fat),
+      fiber: scaleNumberInString(recipe.nutritionalValues.fiber),
+    };
+    const scaledCostBreakdown = (recipe.costBreakdown || []).map(c => ({ item: c.item, cost: scaleCost(c.cost) }));
+    const baseTotal = recipe.totalCost ?? (recipe.costBreakdown || []).reduce((s, c) => s + (c.cost || 0), 0);
+    const scaledTotal = scaleCost(baseTotal);
+    try {
+      exportRecipeToPdf(recipe, scaledIngredients, scaledNutrition, scaledCostBreakdown, scaledTotal, currentServings);
+      toast({ title: "PDF downloaded", description: "Your recipe PDF is ready" });
+    } catch (e) {
+      console.error(e);
+      toast({ title: "Error", description: "Failed to generate PDF", variant: "destructive" });
+    }
+  };
+
   // Cooking mode
   if (showCookingMode && recipe) {
     return <CookingMode title={recipe.title} instructions={recipe.instructions} onClose={() => setShowCookingMode(false)} />;
