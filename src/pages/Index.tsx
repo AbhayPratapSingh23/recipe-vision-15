@@ -16,6 +16,8 @@ import RecipeCards from "@/components/RecipeCards";
 import CookingMode from "@/components/CookingMode";
 import SmartModifications from "@/components/SmartModifications";
 import RecipeSearch from "@/components/RecipeSearch";
+import RecipeSkeleton from "@/components/RecipeSkeleton";
+import { exportRecipeToPdf } from "@/lib/recipePdf";
 
 interface IngredientLabel {
   name: string;
@@ -494,6 +496,28 @@ const Index = () => {
     URL.revokeObjectURL(url);
   };
 
+  const downloadRecipePdf = () => {
+    if (!recipe) return;
+    const scaledIngredients = recipe.ingredients.map(i => scaleIngredient(i));
+    const scaledNutrition = {
+      calories: scaleNumberInString(recipe.nutritionalValues.calories),
+      protein: scaleNumberInString(recipe.nutritionalValues.protein),
+      carbs: scaleNumberInString(recipe.nutritionalValues.carbs),
+      fat: scaleNumberInString(recipe.nutritionalValues.fat),
+      fiber: scaleNumberInString(recipe.nutritionalValues.fiber),
+    };
+    const scaledCostBreakdown = (recipe.costBreakdown || []).map(c => ({ item: c.item, cost: scaleCost(c.cost) }));
+    const baseTotal = recipe.totalCost ?? (recipe.costBreakdown || []).reduce((s, c) => s + (c.cost || 0), 0);
+    const scaledTotal = scaleCost(baseTotal);
+    try {
+      exportRecipeToPdf(recipe, scaledIngredients, scaledNutrition, scaledCostBreakdown, scaledTotal, currentServings);
+      toast({ title: "PDF downloaded", description: "Your recipe PDF is ready" });
+    } catch (e) {
+      console.error(e);
+      toast({ title: "Error", description: "Failed to generate PDF", variant: "destructive" });
+    }
+  };
+
   // Cooking mode
   if (showCookingMode && recipe) {
     return <CookingMode title={recipe.title} instructions={recipe.instructions} onClose={() => setShowCookingMode(false)} />;
@@ -689,6 +713,9 @@ const Index = () => {
             </>
           )}
 
+          {/* Loading skeleton: while recipe is being generated/searched and not yet shown */}
+          {(isLoading || isSearching) && stage !== "viewRecipe" && !recipe && <RecipeSkeleton />}
+
 
           {/* STAGE: VIEW RECIPE */}
           {stage === "viewRecipe" && recipe && (
@@ -701,7 +728,9 @@ const Index = () => {
                       <Play className="w-4 h-4" /> Cooking Mode
                     </Button>
                     <Button onClick={downloadIngredients} variant="outline" size="sm">Download Ingredients</Button>
-                    <Button onClick={downloadRecipe} variant="outline" size="sm">Download Recipe</Button>
+                    <Button onClick={downloadRecipePdf} size="sm" className="bg-gradient-to-r from-primary to-accent">
+                      Export PDF
+                    </Button>
                   </div>
                 </div>
 
