@@ -713,6 +713,9 @@ const Index = () => {
             </>
           )}
 
+          {/* Loading skeleton: while recipe is being generated/searched and not yet shown */}
+          {(isLoading || isSearching) && stage !== "viewRecipe" && !recipe && <RecipeSkeleton />}
+
 
           {/* STAGE: VIEW RECIPE */}
           {stage === "viewRecipe" && recipe && (
